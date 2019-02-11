@@ -47,7 +47,8 @@ def sort_abap(path):
     headers = []
     for i in range(len(t1)):
         t1[i] = os.path.split(t1[i])[1]
-        header_name = re.findall('(.*)_HEADER_  [0-9]{8}_[0-9]{6}.csv', t1[i])
+        header_name = re.findall('(.*)_HEADER_[0-9]{8}_[0-9]{6}.csv', t1[i])
+        print(t1[i], header_name)
         if header_name:
             headers.append(header_name[0])
 
@@ -158,7 +159,7 @@ def remove_ending(files):
         files = [files]
     return_list = []
     for file in files:
-        print(file.split('.'))
+        #print('.'.join(file.split('.')[:-1]))
         return_list.append('.'.join(file.split('.')[:-1]))
     if len(return_list) > 1:
         return return_list
@@ -168,21 +169,23 @@ def remove_ending(files):
 def ending(file):
     return(file.split('.')[-1])
 
-def create_folders(files):
+def create_folders(files, path):
     return_dict = {}
     allowed = set('0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_-')
     for file in files:
-        folder_name = ''.join(filter(lambda x: x in allowed, remove_ending(file)))
-        return_dict[file] = folder_name
-        if not os.path.exists(folder_name):
-            print('create:',folder_name)
-            os.makedirs(folder_name)
+        folder_name = ''.join(filter(lambda x: x in allowed, remove_ending(os.path.split(file)[1])))
+        fldr = os.path.join(path, folder_name)
+        return_dict[file] = fldr
+        if not os.path.exists(fldr):
+            print('create:', fldr)
+            os.makedirs(fldr)
+    ##print(return_dict)
     return return_dict
 
 
 def generate_parquet_file(df, folder):
     pyarrowTable = pyarrow.Table.from_pandas(df, preserve_index=False)
-    pyarrow.parquet.write_table(pyarrowTable, os.path.join(os.getcwd(), folder, ''.join([folder,'.parquet'])), use_deprecated_int96_timestamps=True)
+    pyarrow.parquet.write_table(pyarrowTable, os.path.join(folder, ''.join([os.path.split(folder)[1],'.parquet'])), use_deprecated_int96_timestamps=True)
 
 
 # =============================================================================
@@ -271,7 +274,7 @@ AMNBVCXYpoiuztrewqlkjhgfdsamnbvcxy0987654321'''
     files = files_left(transformationdir_general)
     print('non abap files about to be transformed:',files)
 
-    folders = create_folders(files)
+    folders = create_folders(files, dir_path)
     print('\ncreate_folder completed\n')
 
     for file in files:
