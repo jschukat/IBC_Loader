@@ -13,6 +13,11 @@ import glob
 import shutil
 
 
+# =============================================================================
+# moves all files that have a header file to the subfolder "abap"
+# everything else is left in place
+# returns the path where the abap files are stored
+# =============================================================================
 def sort_abap(path):
     abap_dir = os.path.join(path, 'abap')
     if os.path.isdir(abap_dir):
@@ -21,18 +26,25 @@ def sort_abap(path):
         os.mkdir(abap_dir)
 
     t1 = glob.glob(''.join([path,'/*.csv']))
-
+    # =========================================================================
+    # look for header files in all the csv files
+    # =========================================================================
     headers = []
     for i in range(len(t1)):
         t1[i] = os.path.split(t1[i])[1]
         header_name = re.findall('(.*)_HEADER_  [0-9]{8}_[0-9]{6}.csv', t1[i])
         if header_name:
             headers.append(header_name[0])
+
+    # =========================================================================
+    # move all csv files that have a header file
+    # =========================================================================
     for file in t1:
         for header in headers:
             if header in file:
                 shutil.move(os.path.join(path, file), os.path.join(abap_dir, file))
     return abap_dir
+
 
 class cloud:
 
@@ -93,8 +105,85 @@ class cloud:
         return requests.post(api, headers=self.get_auth())
 
 
+def import_file(file, folder) :
+    # determine delimiter of csv file
+    # assumes normal encoding of the file
+    print(ending(file))
+    if ending(file) == 'csv':
+        sniffer = csv.Sniffer()
+        sniffer.preferred = [';', ',']
+        dialect = ''
+
+        with open(file, 'r') as f:
+            first_line = f.readline()
+            dialect = sniffer.sniff(first_line)
+        print('delimiter: '+dialect.delimiter)
+
+        # low_memory=False ensures that you do not end up with mixed data types in the df
+        detector = UniversalDetector()
+        detector.reset()
+        for line in open(file, 'rb'):
+            detector.feed(line)
+            if detector.done: break
+        detector.close()
+        print('encoding:',detector.result['encoding'].lower(),'\n')
+
+        df = pd.read_csv(file,low_memory=False, encoding=detector.result['encoding'].lower(), sep=dialect.delimiter)
+    else:
+        df = pd.read_excel(file)
+    #convert NULL columns to dtype object
+    for col in df.columns:
+        if all(df[col].isna()):
+            df = df.astype(dtype={col:'object'})
+            df[col] = 'none'
+            null_cols[folder].append(col)
+    return df
+
+def remove_ending(files):
+    if isinstance(files, (str,)):
+        files = [files]
+    return_list = []
+    for file in files:
+        print(file.split('.'))
+        return_list.append('.'.join(file.split('.')[:-1]))
+    if len(return_list) > 1:
+        return return_list
+    else:
+        return return_list[0]
+
+def ending(file):
+    return(file.split('.')[-1])
+
+def create_folders(files):
+    return_dict = {}
+    allowed = set('0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_-')
+    for file in files:
+        folder_name = ''.join(filter(lambda x: x in allowed, remove_ending(file)))
+        return_dict[file] = folder_name
+        if not os.path.exists(folder_name):
+            print('create:',folder_name)
+            os.makedirs(folder_name)
+    return return_dict
+
+
+def generate_parquet_file(df, folder):
+    pyarrowTable = pyarrow.Table.from_pandas(df, preserve_index=False)
+    pyarrow.parquet.write_table(pyarrowTable, os.path.join(os.getcwd(), folder, ''.join([folder,'.parquet'])), use_deprecated_int96_timestamps=True)
+
+
+# =============================================================================
+#                 ___  ___       ___   _   __   _        _____   _   _   __   _   _____   _____   _   _____   __   _
+#                /   |/   |     /   | | | |  \ | |      |  ___| | | | | |  \ | | /  ___| |_   _| | | /  _  \ |  \ | |
+#               / /|   /| |    / /| | | | |   \| |      | |__   | | | | |   \| | | |       | |   | | | | | | |   \| |
+#              / / |__/ | |   / / | | | | | |\   |      |  __|  | | | | | |\   | | |       | |   | | | | | | | |\   |
+#             / /       | |  / /  | | | | | | \  |      | |     | |_| | | | \  | | |___    | |   | | | |_| | | | \  |
+#            /_/        |_| /_/   |_| |_| |_|  \_|      |_|     \_____/ |_|  \_| \_____|   |_|   |_| \_____/ |_|  \_|
+#
+# =============================================================================
+
 url = cl.url
-logname = ''.join([datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S'),'_uploader.log'])
+logname = ''.join([datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S'),
+                                                    '_uploader.log'])
 parts = []
 connectionflag = 1
 try:
@@ -121,9 +210,13 @@ else:
     connectionid = ''
 
 dir_path = cl.outputdir.replace('/', '\\\\')
-transformationdir = cl.inputdir.replace('/', '\\\\')
+transformationdir_general = cl.inputdir.replace('/', '\\\\')
 if cl.transformation == 1:
-    sample = 'POIUZTREWQLKJHGFDSAMNBVCXYpoiuztrewqlkjhgfdsamnbvcxy0987654321POIUZTREWQLKJHGFDSAMNBVCXYpoiuztrewqlkjhgfdsamnbvcxy0987654321POIUZTREWQLKJHGFDSAMNBVCXYpoiuztrewqlkjhgfdsamnbvcxy0987654321'
+
+    transformationdir = sort_abap(transformationdir_general)
+    sample = '''POIUZTREWQLKJHGFDSAMNBVCXYpoiuztrewqlkjhgfdsamnbvcxy0987654321P\
+OIUZTREWQLKJHGFDSAMNBVCXYpoiuztrewqlkjhgfdsamnbvcxy0987654321POIUZTREWQLKJHGFDS\
+AMNBVCXYpoiuztrewqlkjhgfdsamnbvcxy0987654321'''
     availablememory = str(int(((psutil.virtual_memory().free)/1024.0**2)*0.95))
     cmdlist = ('java -Xmx', availablememory,
                'm -jar connector-sap-1.1-SNAPSHOT.jar convert "',
@@ -133,7 +226,8 @@ if cl.transformation == 1:
     print('starting transforamtion with the following command:\n',
           transforamtioncmd)
     sample_name = ''.join(numpy.random.choice([i for i in sample], size=20))
-    with subprocess.Popen(transforamtioncmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT) as proc:
+    with subprocess.Popen(transforamtioncmd, stdout=subprocess.PIPE,
+                          stderr=subprocess.STDOUT) as proc:
         while proc.poll() is None:
             data = str(proc.stdout.readline(), 'utf-8')
             print(data)
@@ -147,10 +241,15 @@ if cl.transformation == 1:
                 error_log.write('Transformation errors:\n')
                 for errors in error_logs:
                     error_log.write(errors)
-            print('transforamtion finished, with errors. Logs have been written to',logname)
+            print('transforamtion finished, with errors. Logs have been written\
+                  to',logname)
         else:
             print('transforamtion finished.')
     os.remove(sample_name)
+
+
+
+
 if cl.upload == 1:
     jobstatus = {}
     dirs = [join(dir_path, f) for f in listdir(dir_path) if os.path.isdir(join(dir_path, f))]
