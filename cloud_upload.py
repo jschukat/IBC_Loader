@@ -20,6 +20,16 @@ from chardet.universaldetector import UniversalDetector
 from collections import defaultdict
 
 
+def files_left(path):
+    t1 = glob.glob(''.join([path,'/*.csv']))
+    t2 = glob.glob(''.join([path,'/*.xls']))
+    t3 = glob.glob(''.join([path,'/*.xlsx']))
+    left_overs = []
+    left_overs.extend(t1)
+    left_overs.extend(t2)
+    left_overs.extend(t3)
+    return left_overs
+
 # =============================================================================
 # moves all files that have a header file to the subfolder "abap"
 # everything else is left in place
@@ -27,9 +37,7 @@ from collections import defaultdict
 # =============================================================================
 def sort_abap(path):
     abap_dir = os.path.join(path, 'abap')
-    if os.path.isdir(abap_dir):
-        pass
-    else:
+    if not os.path.isdir(abap_dir):
         os.mkdir(abap_dir)
 
     t1 = glob.glob(''.join([path,'/*.csv']))
@@ -126,16 +134,15 @@ def import_file(file, folder) :
             dialect = sniffer.sniff(first_line)
         print('delimiter: '+dialect.delimiter)
 
-        # low_memory=False ensures that you do not end up with mixed data types in the df
         detector = UniversalDetector()
         detector.reset()
         for line in open(file, 'rb'):
             detector.feed(line)
             if detector.done: break
         detector.close()
-        print('encoding:',detector.result['encoding'].lower(),'\n')
+        print('encoding:', detector.result['encoding'].lower(),'\n')
 
-        df = pd.read_csv(file,low_memory=False, encoding=detector.result['encoding'].lower(), sep=dialect.delimiter)
+        df = pd.read_csv(file, low_memory=False, encoding=detector.result['encoding'].lower(), sep=dialect.delimiter)
     else:
         df = pd.read_excel(file)
     #convert NULL columns to dtype object
@@ -187,6 +194,11 @@ def generate_parquet_file(df, folder):
 #            /_/        |_| /_/   |_| |_| |_|  \_|      |_|     \_____/ |_|  \_| \_____|   |_|   |_| \_____/ |_|  \_|
 #
 # =============================================================================
+
+vertica_commands_file = ''.join([datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S'),'_vertica_commands_file.sql'])
+
+global null_cols
+null_cols = defaultdict(list)
 
 url = cl.url
 logname = ''.join([datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S'),
@@ -254,6 +266,27 @@ AMNBVCXYpoiuztrewqlkjhgfdsamnbvcxy0987654321'''
             print('transforamtion finished.')
     os.remove(sample_name)
 
+
+
+    files = files_left(transformationdir_general)
+    print('non abap files about to be transformed:',files)
+
+    folders = create_folders(files)
+    print('\ncreate_folder completed\n')
+
+    for file in files:
+        print('start loop for:', file)
+        file_df = import_file(file, folders[file])
+        generate_parquet_file(file_df, folders[file])
+        print('\n')
+
+    if null_cols:
+        with open(vertica_commands_file, 'w') as v:
+            print('Some columns needed to be modified for the upload to work. After having uploaded the parquet files, please run the code from the following file in Vertica, to rectify this circumstance. "'+vertica_commands_file+'"')
+            for i in null_cols:
+                for n in null_cols[i]:
+                    vertica_statement = ''.join(['UPDATE "', i, '" SET "', n, '" = NULL;\n'])
+                    v.write(vertica_statement)
 
 
 
