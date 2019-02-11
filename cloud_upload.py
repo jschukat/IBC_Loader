@@ -9,7 +9,30 @@ import time
 import datetime
 import subprocess
 import numpy
+import glob
+import shutil
 
+
+def sort_abap(path):
+    abap_dir = os.path.join(path, 'abap')
+    if os.path.isdir(abap_dir):
+        pass
+    else:
+        os.mkdir(abap_dir)
+
+    t1 = glob.glob(''.join([path,'/*.csv']))
+
+    headers = []
+    for i in range(len(t1)):
+        t1[i] = os.path.split(t1[i])[1]
+        header_name = re.findall('(.*)_HEADER_  [0-9]{8}_[0-9]{6}.csv', t1[i])
+        if header_name:
+            headers.append(header_name[0])
+    for file in t1:
+        for header in headers:
+            if header in file:
+                shutil.move(os.path.join(path, file), os.path.join(abap_dir, file))
+    return abap_dir
 
 class cloud:
 
