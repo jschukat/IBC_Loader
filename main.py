@@ -35,7 +35,7 @@ defaultPoolid = 'Event Collection -> select data pool -> in url copy string betw
 global defaultConnectionid
 defaultConnectionid = 'Event Collection -> open config of data connection -> in url copy string between /data-connections/.../ and /edit'
 global inputdir
-inputdir = 'This should be the directory, where the unzipped ABAP files are stored.'
+inputdir = 'This should be the directory, where the unzipped ABAP and or other csv / excel files are stored.'
 global outputdir
 outputdir = 'This should be an empty directory, where the parquet files can be placed in.'
 global defaultUrl
@@ -240,7 +240,7 @@ entryconnectionid.pack(fill=X, padx=10, pady=5)
 frameinput = Frame(root)
 frameinput.pack(fill=X)
 
-labelinput = Button(frameinput, text='Select ABAP dir', command=selectIn)
+labelinput = Button(frameinput, text='Select ABAP / csv / excel dir', command=selectIn)
 labelinput.pack(side=LEFT, padx=10, pady=5)
 textinput = StringVar()
 entryinput = Entry(frameinput, textvariable=textinput, name='input')
