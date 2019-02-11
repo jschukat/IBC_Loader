@@ -98,13 +98,13 @@ else:
     connectionid = ''
 
 dir_path = cl.outputdir.replace('/', '\\\\')
-transforamtiondir = cl.inputdir.replace('/', '\\\\')
+transformationdir = cl.inputdir.replace('/', '\\\\')
 if cl.transformation == 1:
     sample = 'POIUZTREWQLKJHGFDSAMNBVCXYpoiuztrewqlkjhgfdsamnbvcxy0987654321POIUZTREWQLKJHGFDSAMNBVCXYpoiuztrewqlkjhgfdsamnbvcxy0987654321POIUZTREWQLKJHGFDSAMNBVCXYpoiuztrewqlkjhgfdsamnbvcxy0987654321'
     availablememory = str(int(((psutil.virtual_memory().free)/1024.0**2)*0.95))
     cmdlist = ('java -Xmx', availablememory,
                'm -jar connector-sap-1.1-SNAPSHOT.jar convert "',
-               transforamtiondir, '" "', dir_path, '" NONE')
+               transformationdir, '" "', dir_path, '" NONE')
 
     transforamtioncmd = ''.join(cmdlist)
     print('starting transforamtion with the following command:\n',
