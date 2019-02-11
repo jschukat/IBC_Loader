@@ -12,6 +12,13 @@ import numpy
 import glob
 import shutil
 
+import pandas as pd
+import pyarrow
+import pyarrow.parquet
+import csv
+from chardet.universaldetector import UniversalDetector
+from collections import defaultdict
+
 
 # =============================================================================
 # moves all files that have a header file to the subfolder "abap"
