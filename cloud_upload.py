@@ -174,6 +174,7 @@ def remove_ending(files):
 def ending(file):
     return(file.split('.')[-1])
 
+# TODO: Change folder naming to replace dots with underscores and so on
 def create_folders(files, path):
     return_dict = {}
     allowed = set('0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_-')
