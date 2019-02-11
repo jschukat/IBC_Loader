@@ -130,20 +130,25 @@ def import_file(file, folder) :
         sniffer.preferred = [';', ',']
         dialect = ''
 
-        with open(file, 'r') as f:
+        detector = UniversalDetector()
+        detector.reset()
+
+        with open(file, 'rb') as file_detect:
+            lines_to_analyze = file_detect.readlines(5000)
+
+        for line in lines_to_analyze:
+            detector.feed(line)
+            if detector.done: break
+        detector.close()
+        enc = detector.result['encoding'].lower()
+        print('encoding:', enc,'\n')
+
+        with open(file, mode='r', encoding=enc) as f:
             first_line = f.readline()
             dialect = sniffer.sniff(first_line)
         print('delimiter: '+dialect.delimiter)
 
-        detector = UniversalDetector()
-        detector.reset()
-        for line in open(file, 'rb'):
-            detector.feed(line)
-            if detector.done: break
-        detector.close()
-        print('encoding:', detector.result['encoding'].lower(),'\n')
-
-        df = pd.read_csv(file, low_memory=False, encoding=detector.result['encoding'].lower(), sep=dialect.delimiter)
+        df = pd.read_csv(file, low_memory=False, encoding=enc, sep=dialect.delimiter)
     else:
         df = pd.read_excel(file)
     #convert NULL columns to dtype object
@@ -305,12 +310,12 @@ if cl.upload == 1:
         jobstatus[jobhandle['id']] = False
         uppie.push_new_dir(pool_id=poolid, job_id=jobhandle['id'], dir_path=dr)
         uppie.submit_job(pool_id=poolid, job_id=jobhandle['id'])
-    print('upload done, waiting for jobs to be finished\nyou\'ll get a status update every 15 seconds. Logs will be written to:', logname)
+    print('upload done, waiting for jobs to be finished\nyou\'ll get a status update every 5 seconds. Logs will be written to:', logname)
     running = True
     with open(logname, 'a') as fh:
         fh.write('\n\nUpload log:\n')
         while running:
-            time.sleep(15)
+            time.sleep(5)
             jobs = uppie.list_jobs(poolid)
             for jobids in jobstatus:
                 for i in jobs:
