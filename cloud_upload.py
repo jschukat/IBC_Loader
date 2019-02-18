@@ -172,7 +172,7 @@ def remove_ending(files):
         return return_list[0]
 
 def ending(file):
-    return(file.split('.')[-1])
+    return(file.split('.')[-1].lower())
 
 # TODO: Change folder naming to replace dots with underscores and so on
 def create_folders(files, path):
