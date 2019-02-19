@@ -208,7 +208,7 @@ def generate_parquet_file(df, folder):
     else:
         suffix = 0
         for i in df:
-            pyarrowTable = pyarrow.Table.from_pandas(df, preserve_index=False)
+            pyarrowTable = pyarrow.Table.from_pandas(i, preserve_index=False)
             pyarrow.parquet.write_table(pyarrowTable, os.path.join(folder, ''.join([os.path.split(folder)[1], '_', str(suffix), '.parquet'])), use_deprecated_int96_timestamps=True)
             suffix += 1
 
