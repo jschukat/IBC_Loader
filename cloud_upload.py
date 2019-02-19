@@ -135,7 +135,7 @@ def import_file(file, folder) :
         detector.reset()
 
         with open(file, 'rb') as file_detect:
-            lines_to_analyze = file_detect.readlines(5000)
+            lines_to_analyze = file_detect.readlines(50000)
 
         for line in lines_to_analyze:
             detector.feed(line)
@@ -156,8 +156,8 @@ def import_file(file, folder) :
                 with open(file, mode='r', encoding=enc, errors='replace') as file_backup:
                     data = StringIO(file_backup.read())
                 df = pd.read_csv(data, low_memory=False, sep=dialect.delimiter, error_bad_lines=False, warn_bad_lines=True, quotechar=dialect.quotechar, escapechar=dialect.escapechar)
-            except:
-                print('errorhandling failed, unable to read file:',file)
+            except Exception as e:
+                print('errorhandling failed, unable to read file:', file, '\ndummy dataframe was created\nerror is', e)
                 d = {'col1': [1, 2], 'col2': [3, 4]}
                 df = pd.DataFrame(data=d)
     else:
@@ -201,9 +201,15 @@ def create_folders(files, path):
 
 
 def generate_parquet_file(df, folder):
-    pyarrowTable = pyarrow.Table.from_pandas(df, preserve_index=False)
-    pyarrow.parquet.write_table(pyarrowTable, os.path.join(folder, ''.join([os.path.split(folder)[1],'.parquet'])), use_deprecated_int96_timestamps=True)
-
+    if type(df) is pd.DataFrame:
+        pyarrowTable = pyarrow.Table.from_pandas(df, preserve_index=False)
+        pyarrow.parquet.write_table(pyarrowTable, os.path.join(folder, ''.join([os.path.split(folder)[1],'.parquet'])), use_deprecated_int96_timestamps=True)
+    else:
+        suffix = 0
+        for i in df:
+            pyarrowTable = pyarrow.Table.from_pandas(df, preserve_index=False)
+            pyarrow.parquet.write_table(pyarrowTable, os.path.join(folder, ''.join([os.path.split(folder)[1], '_', str(suffix), '.parquet'])), use_deprecated_int96_timestamps=True)
+            suffix += 1
 
 # =============================================================================
 #                 ___  ___       ___   _   __   _        _____   _   _   __   _   _____   _____   _   _____   __   _
@@ -247,7 +253,8 @@ if connectionflag == 1:
     connectionid = parts[3]
 else:
     connectionid = ''
-
+# TODO: Rewrite all the replacement parts,
+#       as Python also works on windows with forward slashes
 dir_path = cl.outputdir.replace('/', '\\\\')
 transformationdir_general = cl.inputdir.replace('/', '\\\\')
 if cl.transformation == 1:
@@ -344,7 +351,7 @@ if cl.upload == 1:
                         elif i['status'] != 'RUNNING':
                             jobstatus[jobids] = True
                             print(i)
-                            fh.write(''.join([i,'\n']))
+                            fh.write(''.join([str(i),'\n']))
                         else:
                             print('job for',i['targetName'],'still running')
                         break
