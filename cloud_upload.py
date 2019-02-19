@@ -149,13 +149,13 @@ def import_file(file, folder) :
             dialect = sniffer.sniff(f.read(4096))
         print('delimiter:', dialect.delimiter, ' quotechar:', dialect.quotechar, ' escapechar:', dialect.escapechar)
         try:
-            df = pd.read_csv(file, low_memory=False, encoding=enc, sep=dialect.delimiter, error_bad_lines=False, warn_bad_lines=True, quotechar=dialect.quotechar, escapechar=dialect.escapechar, chunksize=200000)
+            df = pd.read_csv(file, low_memory=False, encoding=enc, sep=dialect.delimiter, error_bad_lines=False, warn_bad_lines=True, quotechar=dialect.quotechar, escapechar=dialect.escapechar)
         except:
             try:
                 print('error handling mode')
                 with open(file, mode='r', encoding=enc, errors='replace') as file_backup:
                     data = StringIO(file_backup.read())
-                df = pd.read_csv(data, low_memory=False, sep=dialect.delimiter, error_bad_lines=False, warn_bad_lines=True, quotechar=dialect.quotechar, escapechar=dialect.escapechar, chunksize=200000)
+                df = pd.read_csv(data, sep=dialect.delimiter, error_bad_lines=False, warn_bad_lines=True, quotechar=dialect.quotechar, escapechar=dialect.escapechar, chunksize=200000)
             except Exception as e:
                 print('errorhandling failed, unable to read file:', file, '\ndummy dataframe was created\nerror is', e)
                 d = {'col1': [1, 2], 'col2': [3, 4]}
