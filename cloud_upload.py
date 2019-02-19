@@ -163,11 +163,12 @@ def import_file(file, folder) :
     else:
         df = pd.read_excel(file)
     #convert NULL columns to dtype object
-    for col in df.columns:
-        if all(df[col].isna()):
-            df = df.astype(dtype={col:'object'})
-            df[col] = 'none'
-            null_cols[folder].append(col)
+    if type(df) is pd.DataFrame:
+        for col in df.columns:
+            if all(df[col].isna()):
+                df = df.astype(dtype={col:'object'})
+                df[col] = 'none'
+                null_cols[folder].append(col)
     return df
 
 def remove_ending(files):
