@@ -151,9 +151,13 @@ def import_file(file, folder) :
         try:
             df = pd.read_csv(file, low_memory=False, encoding=enc, sep=dialect.delimiter, error_bad_lines=False, warn_bad_lines=True, quotechar=dialect.quotechar, escapechar=dialect.escapechar)
         except:
-            with open(file, mode='r', encoding=enc, errors='replace') as file_backup:
-                data = StringIO(file_backup.read())
-            df = pd.read_csv(data, low_memory=False, encoding=enc, sep=dialect.delimiter, error_bad_lines=False, warn_bad_lines=True, quotechar=dialect.quotechar, escapechar=dialect.escapechar)
+            try:
+                print('error handling mode')
+                with open(file, mode='r', encoding=enc, errors='replace') as file_backup:
+                    data = StringIO(file_backup.read())
+                df = pd.read_csv(data, low_memory=False, encoding=enc, sep=dialect.delimiter, error_bad_lines=False, warn_bad_lines=True, quotechar=dialect.quotechar, escapechar=dialect.escapechar)
+            except:
+                print('errorhandling failed, unable to read file:',file)
     else:
         df = pd.read_excel(file)
     #convert NULL columns to dtype object
