@@ -155,9 +155,11 @@ def import_file(file, folder) :
                 print('error handling mode')
                 with open(file, mode='r', encoding=enc, errors='replace') as file_backup:
                     data = StringIO(file_backup.read())
-                df = pd.read_csv(data, low_memory=False, encoding=enc, sep=dialect.delimiter, error_bad_lines=False, warn_bad_lines=True, quotechar=dialect.quotechar, escapechar=dialect.escapechar)
+                df = pd.read_csv(data, low_memory=False, sep=dialect.delimiter, error_bad_lines=False, warn_bad_lines=True, quotechar=dialect.quotechar, escapechar=dialect.escapechar)
             except:
                 print('errorhandling failed, unable to read file:',file)
+                d = {'col1': [1, 2], 'col2': [3, 4]}
+                df = pd.DataFrame(data=d)
     else:
         df = pd.read_excel(file)
     #convert NULL columns to dtype object
