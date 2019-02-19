@@ -127,7 +127,7 @@ def import_file(file, folder) :
     print(ending(file))
     if ending(file) == 'csv':
         sniffer = csv.Sniffer()
-        sniffer.preferred = [';', ',']
+        sniffer.preferred = [';', ',', '\t']
         dialect = ''
 
         detector = UniversalDetector()
@@ -143,12 +143,15 @@ def import_file(file, folder) :
         enc = detector.result['encoding'].lower()
         print('encoding:', enc,'\n')
 
-        with open(file, mode='r', encoding=enc) as f:
-            first_line = f.readline()
-            dialect = sniffer.sniff(first_line)
-        print('delimiter: '+dialect.delimiter)
-
-        df = pd.read_csv(file, low_memory=False, encoding=enc, sep=dialect.delimiter)
+        with open(file, mode='r', encoding=enc, errors='replace') as f:
+            #first_line = f.readline()
+            dialect = sniffer.sniff(f.read(4096))
+        print('delimiter:', dialect.delimiter, ' quotechar:', dialect.quotechar, ' escapechar:', dialect.escapechar)
+        try:
+            df = pd.read_csv(file, low_memory=False, encoding=enc, sep=dialect.delimiter, error_bad_lines=False, warn_bad_lines=True, quotechar=dialect.quotechar, escapechar=dialect.escapechar)
+        except:
+            with open(file, mode='r', encoding=enc, errors='replace') as file_backup:
+                df = pd.read_csv(file_backup, low_memory=False, encoding=enc, sep=dialect.delimiter, error_bad_lines=False, warn_bad_lines=True, quotechar=dialect.quotechar, escapechar=dialect.escapechar)
     else:
         df = pd.read_excel(file)
     #convert NULL columns to dtype object
