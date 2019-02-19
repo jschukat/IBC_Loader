@@ -11,6 +11,7 @@ import subprocess
 import numpy
 import glob
 import shutil
+from io import StringIO
 
 import pandas as pd
 import pyarrow
@@ -151,7 +152,8 @@ def import_file(file, folder) :
             df = pd.read_csv(file, low_memory=False, encoding=enc, sep=dialect.delimiter, error_bad_lines=False, warn_bad_lines=True, quotechar=dialect.quotechar, escapechar=dialect.escapechar)
         except:
             with open(file, mode='r', encoding=enc, errors='replace') as file_backup:
-                df = pd.read_csv(file_backup, low_memory=False, encoding=enc, sep=dialect.delimiter, error_bad_lines=False, warn_bad_lines=True, quotechar=dialect.quotechar, escapechar=dialect.escapechar)
+                data = StringIO(file_backup.read())
+            df = pd.read_csv(data, low_memory=False, encoding=enc, sep=dialect.delimiter, error_bad_lines=False, warn_bad_lines=True, quotechar=dialect.quotechar, escapechar=dialect.escapechar)
     else:
         df = pd.read_excel(file)
     #convert NULL columns to dtype object
