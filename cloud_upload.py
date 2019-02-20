@@ -268,7 +268,7 @@ if cl.transformation == 1:
 GFDSAMNBVCXYpoiuztrewqlkjhgfdsamnbvcxy0987654321'''
         availablememory = str(int(((psutil.virtual_memory().free)/1024.0**2)*0.95))
         cmdlist = ('java -Xmx', availablememory,
-                   'm -jar connector-sap-1.1-SNAPSHOT.jar convert "',
+                   'm -jar connector-sap.jar convert "',
                    transformationdir, '" "', dir_path, '" NONE')
 
         transforamtioncmd = ''.join(cmdlist)

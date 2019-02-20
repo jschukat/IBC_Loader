@@ -5,6 +5,11 @@
 
 3) Create an empty folder to be used for the parquet files
 
+TO TRANSFORM ABAP OUTPUT AN EXTRA FILE IS NEEDED:
+  visit https://help.celonis.cloud/display/CIBC/Versions+-+SAP+ERP+Extractor to download the
+  latest SAP extractor package. From this take the connector-sap.jar and place it in the
+  folder containing all the python files. 
+
 if you have the batch file "IBC Loader.bat" on your desktop:
       execute it
       if asked for: use the git credentials saved on the desktop to update to the latest version
