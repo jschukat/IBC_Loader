@@ -37,9 +37,6 @@ def files_left(path):
 # returns the path where the abap files are stored
 # =============================================================================
 def sort_abap(path):
-    abap_dir = os.path.join(path, 'abap')
-    if not os.path.isdir(abap_dir):
-        os.mkdir(abap_dir)
 
     t1 = glob.glob(''.join([path,'/*.csv']))
     # =========================================================================
@@ -56,11 +53,17 @@ def sort_abap(path):
     # =========================================================================
     # move all csv files that have a header file
     # =========================================================================
-    for file in t1:
-        for header in headers:
-            if header in file:
-                shutil.move(os.path.join(path, file), os.path.join(abap_dir, file))
-    return abap_dir
+    if headers:
+        abap_dir = os.path.join(path, 'abap')
+        if not os.path.isdir(abap_dir):
+            os.mkdir(abap_dir)
+        for file in t1:
+            for header in headers:
+                if header in file:
+                    shutil.move(os.path.join(path, file), os.path.join(abap_dir, file))
+        return abap_dir
+    else:
+        return None
 
 
 class cloud:
@@ -259,38 +262,39 @@ transformationdir_general = cl.inputdir.replace('/', '\\\\')
 if cl.transformation == 1:
 
     transformationdir = sort_abap(transformationdir_general)
-    sample = '''POIUZTREWQLKJHGFDSAMNBVCXYpoiuztrewqlkjhgfdsamnbvcxy0987654321P\
-OIUZTREWQLKJHGFDSAMNBVCXYpoiuztrewqlkjhgfdsamnbvcxy0987654321POIUZTREWQLKJHGFDS\
-AMNBVCXYpoiuztrewqlkjhgfdsamnbvcxy0987654321'''
-    availablememory = str(int(((psutil.virtual_memory().free)/1024.0**2)*0.95))
-    cmdlist = ('java -Xmx', availablememory,
-               'm -jar connector-sap-1.1-SNAPSHOT.jar convert "',
-               transformationdir, '" "', dir_path, '" NONE')
+    if transformationdir:
+        sample = '''POIUZTREWQLKJHGFDSAMNBVCXYpoiuztrewqlkjhgfdsamnbvcxy0987654\
+321POIUZTREWQLKJHGFDSAMNBVCXYpoiuztrewqlkjhgfdsamnbvcxy0987654321POIUZTREWQLKJH\
+GFDSAMNBVCXYpoiuztrewqlkjhgfdsamnbvcxy0987654321'''
+        availablememory = str(int(((psutil.virtual_memory().free)/1024.0**2)*0.95))
+        cmdlist = ('java -Xmx', availablememory,
+                   'm -jar connector-sap-1.1-SNAPSHOT.jar convert "',
+                   transformationdir, '" "', dir_path, '" NONE')
 
-    transforamtioncmd = ''.join(cmdlist)
-    print('starting transforamtion with the following command:\n',
-          transforamtioncmd)
-    sample_name = ''.join(numpy.random.choice([i for i in sample], size=20))
-    with subprocess.Popen(transforamtioncmd, stdout=subprocess.PIPE,
-                          stderr=subprocess.STDOUT) as proc:
-        while proc.poll() is None:
-            data = str(proc.stdout.readline(), 'utf-8')
-            print(data)
-            with open(sample_name, 'a') as tmp_output:
-                tmp_output.write(data)
-    with open(sample_name, 'r') as tmp_file:
-        tmp_file_read = tmp_file.read()
-        error_logs = re.findall(re.compile('\[main\] ERROR(.*?)[0-9]{2}:[0-9]{2}:[0-9]{2}\.[0-9]{3} \[main\]', re.DOTALL), tmp_file_read)
-        if error_logs:
-            with open(logname, 'a') as error_log:
-                error_log.write('Transformation errors:\n')
-                for errors in error_logs:
-                    error_log.write(errors)
-            print('transforamtion finished, with errors. Logs have been written\
-                  to',logname)
-        else:
-            print('transforamtion finished.')
-    os.remove(sample_name)
+        transforamtioncmd = ''.join(cmdlist)
+        print('starting transforamtion with the following command:\n',
+              transforamtioncmd)
+        sample_name = ''.join(numpy.random.choice([i for i in sample], size=20))
+        with subprocess.Popen(transforamtioncmd, stdout=subprocess.PIPE,
+                              stderr=subprocess.STDOUT) as proc:
+            while proc.poll() is None:
+                data = str(proc.stdout.readline(), 'utf-8')
+                print(data)
+                with open(sample_name, 'a') as tmp_output:
+                    tmp_output.write(data)
+        with open(sample_name, 'r') as tmp_file:
+            tmp_file_read = tmp_file.read()
+            error_logs = re.findall(re.compile('\[main\] ERROR(.*?)[0-9]{2}:[0-9]{2}:[0-9]{2}\.[0-9]{3} \[main\]', re.DOTALL), tmp_file_read)
+            if error_logs:
+                with open(logname, 'a') as error_log:
+                    error_log.write('Transformation errors:\n')
+                    for errors in error_logs:
+                        error_log.write(errors)
+                print('transforamtion finished, with errors. Logs have been written\
+                      to',logname)
+            else:
+                print('transforamtion finished.')
+        os.remove(sample_name)
 
 
 
