@@ -148,7 +148,6 @@ def import_file(file, folder) :
         print('encoding:', enc,'\n')
 
         with open(file, mode='r', encoding=enc, errors='replace') as f:
-            #first_line = f.readline()
             dialect = sniffer.sniff(f.read(4096))
         print('delimiter:', dialect.delimiter, ' quotechar:', dialect.quotechar, ' escapechar:', dialect.escapechar)
         try:
@@ -158,11 +157,14 @@ def import_file(file, folder) :
                 print('error handling mode')
                 with open(file, mode='r', encoding=enc, errors='replace') as file_backup:
                     data = StringIO(file_backup.read())
-                df = pd.read_csv(data, low_memory=False, sep=dialect.delimiter, error_bad_lines=False, warn_bad_lines=True, quotechar=dialect.quotechar, escapechar=dialect.escapechar)#, chunksize=200000)
+                df = pd.read_csv(data, low_memory=False, sep=dialect.delimiter, error_bad_lines=False, warn_bad_lines=True, quotechar=dialect.quotechar, escapechar=dialect.escapechar, chunksize=200000)
             except Exception as e:
                 print('errorhandling failed, unable to read file:', file, '\nerror is', e)
     else:
-        df = pd.read_excel(file)
+        try:
+            df = pd.read_excel(file)
+        except Exception as e:
+            print('unable to read', file, 'with the following error:', e)
     #convert NULL columns to dtype object
     if type(df) is pd.DataFrame:
         for col in df.columns:
@@ -201,7 +203,7 @@ def create_folders(files, path):
     ##print(return_dict)
     return return_dict
 
-
+# TODO: change to fastparquet
 def generate_parquet_file(df, folder):
     if type(df) is pd.DataFrame:
         pyarrowTable = pyarrow.Table.from_pandas(df, preserve_index=False)
