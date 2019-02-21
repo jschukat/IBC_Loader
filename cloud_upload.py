@@ -60,7 +60,7 @@ def sort_abap(path):
         for file in t1:
             for header in headers:
                 if header in file:
-                    shutil.move(os.path.join(path, file), os.path.join(abap_dir, file))
+                    shutil.move(os.path.join(path, file), abap_dir)
         return abap_dir
     else:
         return None
@@ -231,10 +231,8 @@ global null_cols
 null_cols = defaultdict(list)
 
 
-# TODO: Rewrite all the replacement parts,
-#       as Python also works on windows with forward slashes
-dir_path = cl.outputdir.replace('/', '\\\\')
-transformationdir_general = cl.inputdir.replace('/', '\\\\')
+dir_path = os.path.normpath(cl.outputdir) #.replace('/', '\\\\')
+transformationdir_general = os.path.normpath(cl.inputdir) #.replace('/', '\\\\')
 if cl.transformation == 1:
 
     transformationdir = sort_abap(transformationdir_general)
@@ -328,7 +326,7 @@ if cl.upload == 1:
     else:
         connectionid = ''
 
-    
+
     jobstatus = {}
     dirs = [join(dir_path, f) for f in listdir(dir_path) if os.path.isdir(join(dir_path, f))]
     print('Dirs to be uploaded:\n',dirs)
