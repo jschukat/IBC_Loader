@@ -230,33 +230,7 @@ vertica_commands_file = ''.join([datetime.datetime.now().strftime('%Y-%m-%d_%H-%
 global null_cols
 null_cols = defaultdict(list)
 
-url = cl.url
-logname = ''.join([datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S'),
-                                                    '_uploader.log'])
-parts = []
-connectionflag = 1
-try:
-    parts.append(re.search('https://([a-z0-9-]+)\.', url).groups()[0])
-    parts.append(re.search('\.([eus]+-1)\.celonis', url).groups()[0])
-    parts.append(re.search('ui/pools/([a-z0-9-]+)', url).groups()[0])
-    try:
-        parts.append(re.search('data-connections/[a-z]+/([a-z0-9-]+)', url)
-                     .groups()[0])
-    except AttributeError:
-        connectionflag = 0
-except AttributeError:
-    print('this is an unvalid url.')
-print(connectionflag)
 
-tenant = parts[0]
-cluster = parts[1]
-apikey = cl.apikey
-poolid = parts[2]
-
-if connectionflag == 1:
-    connectionid = parts[3]
-else:
-    connectionid = ''
 # TODO: Rewrite all the replacement parts,
 #       as Python also works on windows with forward slashes
 dir_path = cl.outputdir.replace('/', '\\\\')
@@ -326,6 +300,35 @@ GFDSAMNBVCXYpoiuztrewqlkjhgfdsamnbvcxy0987654321'''
 
 
 if cl.upload == 1:
+    url = cl.url
+    logname = ''.join([datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S'),
+                                                        '_uploader.log'])
+    parts = []
+    connectionflag = 1
+    try:
+        parts.append(re.search('https://([a-z0-9-]+)\.', url).groups()[0])
+        parts.append(re.search('\.([eus]+-1)\.celonis', url).groups()[0])
+        parts.append(re.search('ui/pools/([a-z0-9-]+)', url).groups()[0])
+        try:
+            parts.append(re.search('data-connections/[a-z]+/([a-z0-9-]+)', url)
+                         .groups()[0])
+        except AttributeError:
+            connectionflag = 0
+    except AttributeError:
+        print('this is an unvalid url.')
+    print(connectionflag)
+
+    tenant = parts[0]
+    cluster = parts[1]
+    apikey = cl.apikey
+    poolid = parts[2]
+
+    if connectionflag == 1:
+        connectionid = parts[3]
+    else:
+        connectionid = ''
+
+    
     jobstatus = {}
     dirs = [join(dir_path, f) for f in listdir(dir_path) if os.path.isdir(join(dir_path, f))]
     print('Dirs to be uploaded:\n',dirs)
