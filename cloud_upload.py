@@ -1,25 +1,29 @@
-import requests
-from os import listdir
-from os.path import isfile, join
-import os
-import cloud_upload_config as cl
-import psutil
-import re
-import time
-import datetime
-import subprocess
-import numpy
-import glob
-import shutil
-from io import StringIO
-
-import pandas as pd
-import pyarrow
-import pyarrow.parquet
-import csv
-from chardet.universaldetector import UniversalDetector
-from collections import defaultdict
-
+try:
+    import requests
+    from os import listdir
+    from os.path import isfile, join
+    import os
+    import cloud_upload_config as cl
+    import psutil
+    import re
+    import time
+    import datetime
+    import subprocess
+    import numpy
+    import glob
+    import shutil
+    from io import StringIO
+    import pandas as pd
+    import pyarrow
+    import pyarrow.parquet
+    import csv
+    from chardet.universaldetector import UniversalDetector
+    from collections import defaultdict
+except ModuleNotFoundError as e:
+    print(e)
+    print('please install missing packages to use this program.')
+    print('shutting down')
+    quit()
 
 def files_left(path):
     t1 = glob.glob(''.join([path,'/*.csv']))
