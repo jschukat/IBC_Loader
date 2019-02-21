@@ -25,6 +25,13 @@ except ModuleNotFoundError as e:
     print('shutting down')
     quit()
 
+
+# =============================================================================
+# returns all files for a path that are csv or Excel
+#
+# IN:   path as string
+# OUT:  list containing files
+# =============================================================================
 def files_left(path):
     t1 = glob.glob(''.join([path,'/*.csv']))
     t2 = glob.glob(''.join([path,'/*.xls']))
@@ -39,6 +46,10 @@ def files_left(path):
 # moves all files that have a header file to the subfolder "abap"
 # everything else is left in place
 # returns the path where the abap files are stored
+# or none if no ABAP files can be found
+#
+# IN:   path as string
+# OUT:  directory as string or None
 # =============================================================================
 def sort_abap(path):
 
@@ -55,7 +66,9 @@ def sort_abap(path):
             headers.append(header_name[0])
 
     # =========================================================================
-    # move all csv files that have a header file
+    # move all csv files that have a header file and return the directory where
+    #   the files have been moved to.
+    #   If no files could be found return None
     # =========================================================================
     if headers:
         abap_dir = os.path.join(path, 'abap')
@@ -153,17 +166,25 @@ def import_file(file, folder) :
 
         with open(file, mode='r', encoding=enc, errors='replace') as f:
             dialect = sniffer.sniff(f.read(4096))
-        print('delimiter:', dialect.delimiter, ' quotechar:', dialect.quotechar, ' escapechar:', dialect.escapechar)
+        print('delimiter:', dialect.delimiter, ' quotechar:', dialect.quotechar,
+              ' escapechar:', dialect.escapechar)
         try:
-            df = pd.read_csv(file, low_memory=False, encoding=enc, sep=dialect.delimiter, error_bad_lines=False, warn_bad_lines=True, quotechar=dialect.quotechar, escapechar=dialect.escapechar)
+            df = pd.read_csv(file, low_memory=False, encoding=enc,
+                             sep=dialect.delimiter, error_bad_lines=False,
+                             warn_bad_lines=True, quotechar=dialect.quotechar,
+                             escapechar=dialect.escapechar)
         except:
             try:
                 print('error handling mode')
                 with open(file, mode='r', encoding=enc, errors='replace') as file_backup:
                     data = StringIO(file_backup.read())
-                df = pd.read_csv(data, low_memory=False, sep=dialect.delimiter, error_bad_lines=False, warn_bad_lines=True, quotechar=dialect.quotechar, escapechar=dialect.escapechar, chunksize=200000)
+                df = pd.read_csv(data, low_memory=False, sep=dialect.delimiter,
+                                 error_bad_lines=False, warn_bad_lines=True,
+                                 quotechar=dialect.quotechar,
+                                 escapechar=dialect.escapechar, chunksize=200000)
             except Exception as e:
-                print('errorhandling failed, unable to read file:', file, '\nerror is', e)
+                print('errorhandling failed, unable to read file:', file,
+                      '\nerror is', e)
     else:
         try:
             df = pd.read_excel(file)
@@ -183,7 +204,6 @@ def remove_ending(files):
         files = [files]
     return_list = []
     for file in files:
-        #print('.'.join(file.split('.')[:-1]))
         return_list.append('.'.join(file.split('.')[:-1]))
     if len(return_list) > 1:
         return return_list
@@ -198,13 +218,13 @@ def create_folders(files, path):
     return_dict = {}
     allowed = set('0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_-')
     for file in files:
-        folder_name = ''.join(filter(lambda x: x in allowed, remove_ending(os.path.split(file)[1])))
+        folder_name = ''.join(filter(lambda x: x in allowed,
+                                     remove_ending(os.path.split(file)[1])))
         fldr = os.path.join(path, folder_name)
         return_dict[file] = fldr
         if not os.path.exists(fldr):
             print('create:', fldr)
             os.makedirs(fldr)
-    ##print(return_dict)
     return return_dict
 
 # TODO: change to fastparquet
@@ -235,8 +255,8 @@ global null_cols
 null_cols = defaultdict(list)
 
 
-dir_path = os.path.normpath(cl.outputdir) #.replace('/', '\\\\')
-transformationdir_general = os.path.normpath(cl.inputdir) #.replace('/', '\\\\')
+dir_path = os.path.normpath(cl.outputdir)
+transformationdir_general = os.path.normpath(cl.inputdir)
 if cl.transformation == 1:
 
     transformationdir = sort_abap(transformationdir_general)
@@ -293,10 +313,13 @@ GFDSAMNBVCXYpoiuztrewqlkjhgfdsamnbvcxy0987654321'''
 
     if null_cols:
         with open(vertica_commands_file, 'w') as v:
-            print('Some columns needed to be modified for the upload to work. After having uploaded the parquet files, please run the code from the following file in Vertica, to rectify this circumstance. "'+vertica_commands_file+'"')
+            print('''Some columns needed to be modified for the upload to work.\
+After having uploaded the parquet files, please run the code from the following\
+file in Vertica, to rectify this circumstance. "'''+vertica_commands_file+'"')
             for i in null_cols:
                 for n in null_cols[i]:
-                    vertica_statement = ''.join(['UPDATE "', i, '" SET "', n, '" = NULL;\n'])
+                    vertica_statement = ''.join(['UPDATE "', i, '" SET "', n,
+                                                 '" = NULL;\n'])
                     v.write(vertica_statement)
 
 
@@ -338,11 +361,14 @@ if cl.upload == 1:
     for dr in dirs :
         if dr == '__pycache__' : continue
         print('\nuploading:',dr.split('\\')[-1])
-        jobhandle = uppie.create_job(pool_id=poolid, data_connection_id=connectionid, targetName=dr.split('\\')[-1])
+        jobhandle = uppie.create_job(pool_id=poolid,
+                                     data_connection_id=connectionid,
+                                     targetName=dr.split('\\')[-1])
         jobstatus[jobhandle['id']] = False
         uppie.push_new_dir(pool_id=poolid, job_id=jobhandle['id'], dir_path=dr)
         uppie.submit_job(pool_id=poolid, job_id=jobhandle['id'])
-    print('upload done, waiting for jobs to be finished\nyou\'ll get a status update every 5 seconds. Logs will be written to:', logname)
+    print('''upload done, waiting for jobs to be finished\nyou\'ll get a status\
+update every 5 seconds. Logs will be written to:''', logname)
     running = True
     with open(logname, 'a') as fh:
         fh.write('\n\nUpload log:\n')
