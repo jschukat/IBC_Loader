@@ -379,22 +379,25 @@ update every 5 seconds. Logs will be written to:''', logname)
             jobs = uppie.list_jobs(poolid)
             for jobids in jobstatus:
                 for i in jobs:
-                    if i['id'] == jobids:
-                        if i['status'] == 'QUEUED':
-                            print('job for',i['targetName'],'queued')
-                        elif jobstatus[jobids] == True:
-                            pass
-                        elif i['status'] == 'DONE':
-                            jobstatus[jobids] = True
-                            printout = ' '.join([i['targetName'],'was successfully installed in the database'])
-                            print(printout)
-                            fh.write(''.join([printout,'\n']))
-                        elif i['status'] != 'RUNNING':
-                            jobstatus[jobids] = True
-                            print(i)
-                            fh.write(''.join([str(i),'\n']))
-                        else:
-                            print('job for',i['targetName'],'still running')
+                    try:
+                        if i['id'] == jobids:
+                            if i['status'] == 'QUEUED':
+                                print('job for',i['targetName'],'queued')
+                            elif jobstatus[jobids] == True:
+                                pass
+                            elif i['status'] == 'DONE':
+                                jobstatus[jobids] = True
+                                printout = ' '.join([i['targetName'],'was successfully installed in the database'])
+                                print(printout)
+                                fh.write(''.join([printout,'\n']))
+                            elif i['status'] != 'RUNNING':
+                                jobstatus[jobids] = True
+                                print(i)
+                                fh.write(''.join([str(i),'\n']))
+                            else:
+                                print('job for',i['targetName'],'still running')
+                            break
+                    except:
                         break
             if all(status == True for status in jobstatus.values()):
                 running = False
