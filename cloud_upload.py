@@ -267,7 +267,7 @@ if cl.transformation == 1:
 321POIUZTREWQLKJHGFDSAMNBVCXYpoiuztrewqlkjhgfdsamnbvcxy0987654321POIUZTREWQLKJH\
 GFDSAMNBVCXYpoiuztrewqlkjhgfdsamnbvcxy0987654321'''
         availablememory = str(int(((psutil.virtual_memory().free)/1024.0**2)*0.95))
-        jar = glob.glob('connector*.jar')
+        jar = glob.glob('connector*.jar')[0]
         cmdlist = ('java -Xmx', availablememory,
                    'm -jar ', jar, ' convert "',
                    transformationdir, '" "', dir_path, '" NONE')
