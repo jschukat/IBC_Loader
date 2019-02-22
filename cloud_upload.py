@@ -255,6 +255,7 @@ vertica_commands_file = ''.join([datetime.datetime.now().strftime('%Y-%m-%d_%H-%
 global null_cols
 null_cols = defaultdict(list)
 
+logname = ''.join([datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S'), '_uploader.log'])
 
 dir_path = os.path.normpath(cl.outputdir)
 transformationdir_general = os.path.normpath(cl.inputdir)
@@ -328,8 +329,7 @@ file in Vertica, to rectify this circumstance. "'''+vertica_commands_file+'"')
 
 if cl.upload == 1:
     url = cl.url
-    logname = ''.join([datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S'),
-                                                        '_uploader.log'])
+
     parts = []
     connectionflag = 1
     try:
