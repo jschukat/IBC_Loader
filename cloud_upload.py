@@ -78,6 +78,7 @@ def sort_abap(path):
             for header in headers:
                 if header in file:
                     shutil.move(os.path.join(path, file), abap_dir)
+                    break
         return abap_dir
     else:
         return None
