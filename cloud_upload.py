@@ -70,8 +70,8 @@ def sort_abap(path):
     #   the files have been moved to.
     #   If no files could be found return None
     # =========================================================================
-    if headers:
-        abap_dir = os.path.join(path, 'abap')
+    abap_dir = os.path.join(path, 'abap')
+    if headers or glob.glob(os.path.join(abap_dir, '*.csv')):
         if not os.path.isdir(abap_dir):
             os.mkdir(abap_dir)
         for file in t1:
