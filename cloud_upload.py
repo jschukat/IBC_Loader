@@ -64,7 +64,7 @@ def sort_abap(path):
         print(t1[i], header_name)
         if header_name:
             headers.append(header_name[0])
-        headers = set(headers)
+    headers = set(headers)
     # =========================================================================
     # move all csv files that have a header file and return the directory where
     #   the files have been moved to.
