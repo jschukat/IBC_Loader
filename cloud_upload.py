@@ -64,7 +64,7 @@ def sort_abap(path):
         print(t1[i], header_name)
         if header_name:
             headers.append(header_name[0])
-
+        headers = set(headers)
     # =========================================================================
     # move all csv files that have a header file and return the directory where
     #   the files have been moved to.
@@ -78,7 +78,7 @@ def sort_abap(path):
             for header in headers:
                 if header in file:
                     shutil.move(os.path.join(path, file), abap_dir)
-                    break
+                    #break
         return abap_dir
     else:
         return None
@@ -266,8 +266,9 @@ if cl.transformation == 1:
 321POIUZTREWQLKJHGFDSAMNBVCXYpoiuztrewqlkjhgfdsamnbvcxy0987654321POIUZTREWQLKJH\
 GFDSAMNBVCXYpoiuztrewqlkjhgfdsamnbvcxy0987654321'''
         availablememory = str(int(((psutil.virtual_memory().free)/1024.0**2)*0.95))
+        jar = glob.glob('connector*.jar')
         cmdlist = ('java -Xmx', availablememory,
-                   'm -jar connector-sap.jar convert "',
+                   'm -jar ', jar, ' convert "',
                    transformationdir, '" "', dir_path, '" NONE')
 
         transforamtioncmd = ''.join(cmdlist)
