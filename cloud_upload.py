@@ -146,6 +146,7 @@ class cloud:
 def import_file(file, folder) :
     # determine delimiter of csv file
     # assumes normal encoding of the file
+    df = None
     print(ending(file))
     if ending(file) == 'csv':
         sniffer = csv.Sniffer()
@@ -173,7 +174,7 @@ def import_file(file, folder) :
             df = pd.read_csv(file, low_memory=False, encoding=enc,
                              sep=dialect.delimiter, error_bad_lines=False,
                              warn_bad_lines=True, quotechar=dialect.quotechar,
-                             escapechar=dialect.escapechar)
+                             escapechar=dialect.escapechar, chunksize=200000)
         except:
             try:
                 print('error handling mode')
@@ -192,7 +193,7 @@ def import_file(file, folder) :
         except Exception as e:
             print('unable to read', file, 'with the following error:', e)
     #convert NULL columns to dtype object
-    if type(df) is pd.DataFrame:
+    if df and type(df) is pd.DataFrame:
         for col in df.columns:
             if all(df[col].isna()):
                 df = df.astype(dtype={col:'object'})
@@ -370,12 +371,12 @@ if cl.upload == 1:
         uppie.push_new_dir(pool_id=poolid, job_id=jobhandle['id'], dir_path=dr)
         uppie.submit_job(pool_id=poolid, job_id=jobhandle['id'])
     print('''upload done, waiting for jobs to be finished\nyou\'ll get a status\
-update every 5 seconds. Logs will be written to:''', logname)
+update every 15 seconds. Logs will be written to:''', logname)
     running = True
     with open(logname, 'a') as fh:
         fh.write('\n\nUpload log:\n')
         while running:
-            time.sleep(5)
+            time.sleep(15)
             jobs = uppie.list_jobs(poolid)
             for jobids in jobstatus:
                 for i in jobs:
