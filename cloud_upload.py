@@ -174,7 +174,7 @@ def import_file(file, folder) :
             df = pd.read_csv(file, low_memory=False, encoding=enc,
                              sep=dialect.delimiter, error_bad_lines=False,
                              warn_bad_lines=True, quotechar=dialect.quotechar,
-                             escapechar=dialect.escapechar, chunksize=200000)
+                             escapechar=dialect.escapechar)
         except:
             try:
                 print('error handling mode')
