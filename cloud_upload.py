@@ -170,12 +170,14 @@ def import_file(file, folder) :
             dialect = sniffer.sniff(f.read(4096))
         print('delimiter:', dialect.delimiter, ' quotechar:', dialect.quotechar,
               ' escapechar:', dialect.escapechar)
+        # TODO: make it have 3 tries and just change variables as exception
         try:
             df = pd.read_csv(file, low_memory=False, encoding=enc,
                              sep=dialect.delimiter, error_bad_lines=False,
                              warn_bad_lines=True, quotechar=dialect.quotechar,
                              escapechar=dialect.escapechar)
-        except:
+        except Exception as f:
+            print(f)
             try:
                 print('error handling mode')
                 with open(file, mode='r', encoding=enc, errors='replace') as file_backup:
@@ -312,7 +314,7 @@ GFDSAMNBVCXYpoiuztrewqlkjhgfdsamnbvcxy0987654321'''
         try:
             generate_parquet_file(file_df, folders[file])
         except:
-            print(file, 'couldn\'t be processed')
+            print(file, 'couldn\'t be transformed to parquet')
         print('\n')
 
     if null_cols:
