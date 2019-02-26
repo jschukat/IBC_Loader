@@ -195,7 +195,7 @@ def import_file(file, folder) :
         except Exception as e:
             print('unable to read', file, 'with the following error:', e)
     #convert NULL columns to dtype object
-    if df and type(df) is pd.DataFrame:
+    if type(df) is pd.DataFrame:
         for col in df.columns:
             if all(df[col].isna()):
                 df = df.astype(dtype={col:'object'})
