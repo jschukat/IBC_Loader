@@ -12,7 +12,7 @@ try:
     import numpy
     import glob
     import shutil
-    from io import StringIO
+    #from io import StringIO
     import pandas as pd
     import pyarrow
     import pyarrow.parquet
@@ -184,11 +184,10 @@ def import_file(file, folder) :
             try:
                 print('error handling mode')
                 with open(file, mode='r', encoding=enc, errors='replace') as file_backup:
-                    data = StringIO(file_backup.read())
-                df = pd.read_csv(data, low_memory=False, sep=dialect.delimiter,
-                                 error_bad_lines=False, warn_bad_lines=True,
-                                 quotechar=dialect.quotechar,
-                                 escapechar=dialect.escapechar, chunksize=200000)
+                    df = pd.read_csv(file_backup, sep=dialect.delimiter,
+                                     error_bad_lines=False, warn_bad_lines=True,
+                                     quotechar=dialect.quotechar,
+                                     escapechar=dialect.escapechar, chunksize=500000)
             except Exception as e:
                 print('errorhandling failed, unable to read file:', file,
                       '\nerror is', e)
