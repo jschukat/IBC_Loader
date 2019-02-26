@@ -165,6 +165,9 @@ def import_file(file, folder) :
         detector.close()
         enc = detector.result['encoding'].lower()
         print('encoding:', enc,'\n')
+        if enc == 'ascii':
+            enc = 'utf-8'
+            print('determined encoding to be ascii, using utf-8 nonetheless as this has been less prone to errors in the past.')
 
         with open(file, mode='r', encoding=enc, errors='replace') as f:
             dialect = sniffer.sniff(f.read(4096))
