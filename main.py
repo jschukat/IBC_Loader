@@ -26,7 +26,7 @@ for pkg in ['psutil', 'requests']:
 
 fast = os.popen('conda list').read()
 if not 'python-snappy' in fast or not 'fastparquet' in fast:
-    conda_check = subprocess.run(['where.exe', 'conda'], capture_output=True)
+    conda_check = subprocess.run(['where.exe', 'conda'])
     if conda_check.returncode == 0:
         print('installing fastparquet and snappy')
         subprocess.run(['conda', 'install', 'fastparquet', '-y'])
