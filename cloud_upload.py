@@ -172,24 +172,39 @@ def import_file(file, folder) :
             print('determined encoding to be ascii, using utf-8 nonetheless as this has been less prone to errors in the past.')
 
         with open(file, mode='r', encoding=enc, errors='replace') as f:
-            dialect = sniffer.sniff(f.read(4096))
-        print('delimiter:', dialect.delimiter, ' quotechar:', dialect.quotechar,
-              ' escapechar:', dialect.escapechar)
+            try:
+                dialect = sniffer.sniff(f.read(4096))
+                delimiter = dialect.delimiter
+                quotechar = dialect.quotechar
+                escapechar = dialect.escapechar
+            except:
+                line1 = f.readline()
+                line2 = f.readline()
+                line3 = f.readline()
+                delim = dict()
+                for i in [';', ',', '\t']:
+                    if len(line1.split(i)) == len(line2.split(i)) == len(line3.split(i)):
+                        delim[i] = len(line1.split(i))
+                delimiter = sorted(delim.items(), key=lambda kv: kv[1])[-1][0]
+                quotechar = '"'
+                escapechar = None
+        print('delimiter:', delimiter, ' quotechar:', quotechar,
+              ' escapechar:', escapechar)
         # TODO: make it have 3 tries and just change variables as exception
         try:
             df = pd.read_csv(file, low_memory=False, encoding=enc,
-                             sep=dialect.delimiter, error_bad_lines=False,
-                             warn_bad_lines=True, quotechar=dialect.quotechar,
-                             escapechar=dialect.escapechar)
+                             sep=delimiter, error_bad_lines=False,
+                             warn_bad_lines=True, quotechar=quotechar,
+                             escapechar=escapechar)
         except Exception as f:
             print(f)
             try:
                 print('error handling mode')
                 with open(file, mode='r', encoding=enc, errors='replace') as file_backup:
-                    df = pd.read_csv(file_backup, sep=dialect.delimiter,
+                    df = pd.read_csv(file_backup, sep=delimiter,
                                      error_bad_lines=False, warn_bad_lines=True,
-                                     quotechar=dialect.quotechar,
-                                     escapechar=dialect.escapechar, chunksize=500000)
+                                     quotechar=quotechar,
+                                     escapechar=escapechar, chunksize=500000)
             except Exception as e:
                 print('errorhandling failed, unable to read file:', file,
                       '\nerror is', e)
