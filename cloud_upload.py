@@ -235,13 +235,13 @@ def generate_parquet_file(df, folder):
     if type(df) is pd.DataFrame:
         chunksize = 200000
         for pos in range(0, len(df), chunksize):
-            tmp_filename = os.path.join(folder, ''.join([file, pos, '.parquet']))
+            tmp_filename = os.path.join(folder, ''.join([file, str(pos), '.parquet']))
             fp.write(tmp_filename, df.iloc[pos:pos+chunksize,:], compression='SNAPPY', write_index=False, times='int96')
     else:
         suffix = 0
         for i in df:
-            pyarrowTable = pyarrow.Table.from_pandas(i, preserve_index=False)
-            pyarrow.parquet.write_table(pyarrowTable, os.path.join(folder, ''.join([file, '_', str(suffix), '.parquet'])), use_deprecated_int96_timestamps=True)
+            tmp_filename = os.path.join(folder, ''.join([file, str(suffix), '.parquet']))
+            fp.write(tmp_filename, i, compression='SNAPPY', write_index=False, times='int96')
             suffix += 1
 
 # =============================================================================
