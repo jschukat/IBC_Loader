@@ -12,6 +12,8 @@ try:
     import numpy
     import glob
     import shutil
+    import fastparquet as fp
+    import snappy
     #from io import StringIO
     import pandas as pd
     import pyarrow
@@ -196,13 +198,7 @@ def import_file(file, folder) :
             df = pd.read_excel(file)
         except Exception as e:
             print('unable to read', file, 'with the following error:', e)
-    #convert NULL columns to dtype object
-    if type(df) is pd.DataFrame:
-        for col in df.columns:
-            if all(df[col].isna()):
-                df = df.astype(dtype={col:'object'})
-                df[col] = 'none'
-                null_cols[folder].append(col)
+
     return df
 
 def remove_ending(files):
@@ -235,14 +231,17 @@ def create_folders(files, path):
 
 # TODO: change to fastparquet
 def generate_parquet_file(df, folder):
+    file = os.path.split(folder)[1]
     if type(df) is pd.DataFrame:
-        pyarrowTable = pyarrow.Table.from_pandas(df, preserve_index=False)
-        pyarrow.parquet.write_table(pyarrowTable, os.path.join(folder, ''.join([os.path.split(folder)[1],'.parquet'])), use_deprecated_int96_timestamps=True)
+        chunksize = 200000
+        for pos in range(0, len(df), chunksize):
+            tmp_filename = os.path.join(folder, ''.join([file, pos, '.parquet']))
+            fp.write(tmp_filename, df.iloc[pos:pos+chunksize,:], compression='SNAPPY', write_index=False, times='int96')
     else:
         suffix = 0
         for i in df:
             pyarrowTable = pyarrow.Table.from_pandas(i, preserve_index=False)
-            pyarrow.parquet.write_table(pyarrowTable, os.path.join(folder, ''.join([os.path.split(folder)[1], '_', str(suffix), '.parquet'])), use_deprecated_int96_timestamps=True)
+            pyarrow.parquet.write_table(pyarrowTable, os.path.join(folder, ''.join([file, '_', str(suffix), '.parquet'])), use_deprecated_int96_timestamps=True)
             suffix += 1
 
 # =============================================================================
