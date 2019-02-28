@@ -29,8 +29,8 @@ if not 'python-snappy' in fast or not 'fastparquet' in fast:
     conda_check = subprocess.run(['where.exe', 'conda'], capture_output=True)
     if conda_check.returncode == 0:
         print('installing fastparquet and snappy')
-        subprocess.run(['conda', 'install', 'fastparquet'])
-        subprocess.run(['conda', 'install', 'python-snappy'])
+        subprocess.run(['conda', 'install', 'fastparquet', '-y'])
+        subprocess.run(['conda', 'install', 'python-snappy', '-y'])
 
 global defaultTenant
 defaultTenant = 'demo, if url is https://demo.eu-1.celonis.cloud/'
