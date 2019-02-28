@@ -1,6 +1,7 @@
 from tkinter import filedialog
 from tkinter import *
 import os
+import subprocess
 # TODO: make module import failsafe
 import cloud_upload_config as ctc
 
@@ -23,6 +24,11 @@ for pkg in ['psutil', 'requests']:
         cmd = ''.join(['pip install ', pkg])
         os.system(cmd)
 
+conda_check = subprocess.run(['where.exe', 'conda'], capture_output=True)
+if conda_check.returncode == 0:
+    print('installing fastparquet and snappy')
+    subprocess.run(['conda', 'install', 'fastparquet'])
+    subprocess.run(['conda', 'install', 'python-snappy'])
 
 global defaultTenant
 defaultTenant = 'demo, if url is https://demo.eu-1.celonis.cloud/'

@@ -16,8 +16,8 @@ try:
     import snappy
     #from io import StringIO
     import pandas as pd
-    import pyarrow
-    import pyarrow.parquet
+    #import pyarrow
+    #import pyarrow.parquet
     import csv
     from chardet.universaldetector import UniversalDetector
     from collections import defaultdict
@@ -178,13 +178,11 @@ def import_file(file, folder) :
                 quotechar = dialect.quotechar
                 escapechar = dialect.escapechar
             except:
+                print('sniffer was unsuccessful, using a simplistic approach to determine the delimiter.')
                 line1 = f.readline()
-                line2 = f.readline()
-                line3 = f.readline()
                 delim = dict()
                 for i in [';', ',', '\t']:
-                    if len(line1.split(i)) == len(line2.split(i)) == len(line3.split(i)):
-                        delim[i] = len(line1.split(i))
+                    delim[i] = len(line1.split(i))
                 delimiter = sorted(delim.items(), key=lambda kv: kv[1])[-1][0]
                 quotechar = '"'
                 escapechar = None
