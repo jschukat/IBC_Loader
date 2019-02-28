@@ -198,11 +198,24 @@ def import_file(file, folder) :
             print(f)
             try:
                 print('error handling mode')
+                df = pd.read_csv(file, low_memory=False, encoding=enc,
+                                 sep=delimiter, error_bad_lines=False, parse_dates=True,
+                                 warn_bad_lines=True, quotechar=quotechar,
+                                 escapechar=escapechar, nrows=200000)
+                col_types = dict()
+                for i in range(len(df.dtypes)):
+                    col_types[i] = df.dtypes[i]
+
+                df = pd.read_csv(file, encoding=enc, sep=delimiter, error_bad_lines=False,
+                                 parse_dates=True, warn_bad_lines=True, quotechar=quotechar,
+                                 escapechar=escapechar, chunksize=200, dtype=col_types)
+                """
                 with open(file, mode='r', encoding=enc, errors='replace') as file_backup:
                     df = pd.read_csv(file_backup, sep=delimiter,
                                      error_bad_lines=False, warn_bad_lines=True,
                                      quotechar=quotechar,
                                      escapechar=escapechar, chunksize=500000)
+                """
             except Exception as e:
                 print('errorhandling failed, unable to read file:', file,
                       '\nerror is', e)
