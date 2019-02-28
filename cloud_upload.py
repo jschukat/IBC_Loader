@@ -267,7 +267,10 @@ def generate_parquet_file(df, folder):
         suffix = 0
         for i in df:
             tmp_filename = os.path.join(folder, ''.join([file, str(suffix), '.parquet']))
-            fp.write(tmp_filename, i, compression='SNAPPY', write_index=False, times='int96')
+            try:
+                fp.write(tmp_filename, i, compression='SNAPPY', write_index=False, times='int96')
+            except:
+                pass
             suffix += 1
 
 # =============================================================================
