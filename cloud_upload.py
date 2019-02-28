@@ -191,7 +191,7 @@ def import_file(file, folder) :
         # TODO: make it have 3 tries and just change variables as exception
         try:
             df = pd.read_csv(file, low_memory=False, encoding=enc,
-                             sep=delimiter, error_bad_lines=False,
+                             sep=delimiter, error_bad_lines=False, parse_dates=True,
                              warn_bad_lines=True, quotechar=quotechar,
                              escapechar=escapechar)
         except Exception as f:
