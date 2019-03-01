@@ -284,19 +284,26 @@ framebuttons = Frame(root)
 transformationflag = IntVar()
 transformationbutton = Checkbutton(framebuttons, text='Run Transformation',
                                    variable=transformationflag, command=setButtonTitle)
-transformationflag.set(1)
+if ctc.transformation == 1:
+    transformationflag.set(1)
+else:
+    transformationflag.set(0)
+
 transformationbutton.grid(row=0, column=1, sticky='WE', padx=10, pady=5)
 
 uploadflag = IntVar()
 uplaodbutton = Checkbutton(framebuttons, text='Upload parquet files',
                            variable=uploadflag, command=setButtonTitle)
 uplaodbutton.grid(row=0, column=2, sticky='WE', padx=10, pady=5)
-uploadflag.set(1)
+if ctc.upload == 1:
+    uploadflag.set(1)
+else:
+    uploadflag.set(0)
 
 runbutton = Button(framebuttons, text='Run Transformation and Upload',
                    command=runlolarun)
 runbutton.grid(row=1, column=1, sticky='WE', padx=10, pady=5)
-
+setButtonTitle()
 exitbutton = Button(framebuttons, text='Exit', command=root.destroy)
 exitbutton.grid(row=1, column=2, sticky='WE', padx=10, pady=5)
 
