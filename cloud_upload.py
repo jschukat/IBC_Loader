@@ -406,7 +406,10 @@ if cl.upload == 1:
     else:
         connectionid = ''
 
-
+    if cl.delta == 1:
+        delta = True
+    else:
+        delta = False
     jobstatus = {}
     dirs = [join(dir_path, f) for f in listdir(dir_path) if os.path.isdir(join(dir_path, f))]
     print('Dirs to be uploaded:\n',dirs)
@@ -418,7 +421,8 @@ if cl.upload == 1:
         print('\nuploading:', os.path.split(dr)[-1])
         jobhandle = uppie.create_job(pool_id=poolid,
                                      data_connection_id=connectionid,
-                                     targetName=os.path.split(dr)[-1])
+                                     targetName=os.path.split(dr)[-1],
+                                     upsert=delta)
         jobstatus[jobhandle['id']] = False
         uppie.push_new_dir(pool_id=poolid, job_id=jobhandle['id'], dir_path=dr)
         uppie.submit_job(pool_id=poolid, job_id=jobhandle['id'])

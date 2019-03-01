@@ -109,6 +109,7 @@ def runlolarun():
     # co = textconnectionid.get()
     tr = transformationflag.get()
     up = uploadflag.get()
+    de = deltaflag.get()
     # if co == defaultConnectionid:
     #     co = ''
     out = textoutput.get()
@@ -125,7 +126,8 @@ apikey = '{}'
 outputdir = '{}'
 inputdir = '{}'
 transformation = {}
-upload = {}\n""".format(ur, ap, out, inp, tr, up))
+upload = {}
+delta = {}\n""".format(ur, ap, out, inp, tr, up, de))
     print('saved to config.')
     cmd = ''.join(['python.exe "', os.path.join(os.getcwd(),
                    'cloud_upload.py'), '"'])
@@ -299,6 +301,21 @@ if ctc.upload == 1:
     uploadflag.set(1)
 else:
     uploadflag.set(0)
+
+
+
+deltaflag = IntVar()
+deltabutton = Checkbutton(framebuttons, text='delta load tables',
+                           variable=deltaflag, command=setButtonTitle)
+deltabutton.grid(row=0, column=3, sticky='WE', padx=10, pady=5)
+if ctc.delta == 1:
+    deltaflag.set(1)
+else:
+    deltaflag.set(0)
+
+
+
+
 
 runbutton = Button(framebuttons, text='Run Transformation and Upload',
                    command=runlolarun)

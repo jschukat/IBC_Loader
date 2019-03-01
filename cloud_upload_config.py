@@ -10,3 +10,4 @@ outputdir = ''
 inputdir = ''
 transformation = 1
 upload = 1
+delta = 0
