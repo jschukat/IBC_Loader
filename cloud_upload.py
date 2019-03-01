@@ -196,6 +196,7 @@ def import_file(file, folder) :
         escapechar = dialect['escapechar']
 
         # TODO: make it have 3 tries and just change variables as exception
+        # add UnicodeDecodeError open(file, mode='r', encoding=enc, errors='replace') as f:
         try:
             print('start reading csv file')
             df = pd.read_csv(file, low_memory=False, encoding=enc,
