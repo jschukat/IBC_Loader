@@ -114,7 +114,7 @@ class cloud:
         api = self.get_jobs_api(pool_id)
         job_type = "REPLACE"
         if upsert:
-            job_type = "UPSERT"
+            job_type = "DELTA"
         if not data_connection_id:
             payload = {'targetName': targetName, 'type': job_type,
                        'dataPoolId': pool_id}
