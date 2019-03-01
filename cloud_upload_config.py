@@ -4,8 +4,8 @@
 # apikey: create key in the cloud team under "My Account"
 # pool: Pool Analytics -> select target pool -> in url copy string after ui/
 
-url = ''
-apikey = ''
+url = 'Open connection settings or data pool (whichever applies) and paste the whole url in here'
+apikey = 'create api key in the cloud team under "My Account" at the very bottom'
 outputdir = ''
 inputdir = ''
 transformation = 1
