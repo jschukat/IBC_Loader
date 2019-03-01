@@ -73,10 +73,17 @@ def sort_abap(path):
     if headers or glob.glob(os.path.join(abap_dir, '*.csv')):
         if not os.path.isdir(abap_dir):
             os.mkdir(abap_dir)
+        # TODO: check if this can be made in one go (mass folder creation)
+        header_dict = dict()
+        for header_folder in headers:
+            header_path = os.path.join(abap_dir, header_folder)
+            if not os.path.isdir(header_path):
+                os.mkdir(header_path)
+            header_dict[header_folder] = header_path
         for file in t1:
-            for header in headers:
-                if header in file:
-                    shutil.move(os.path.join(path, file), abap_dir)
+            for header in header_dict.items():
+                if header[0] in file:
+                    shutil.move(os.path.join(path, file), header[1])
                     break
         return abap_dir
     else:
