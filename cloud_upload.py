@@ -14,10 +14,7 @@ try:
     import shutil
     import fastparquet as fp
     import snappy
-    #from io import StringIO
     import pandas as pd
-    #import pyarrow
-    #import pyarrow.parquet
     import csv
     from chardet.universaldetector import UniversalDetector
     from collections import defaultdict
@@ -144,6 +141,46 @@ class cloud:
         api = self.get_jobs_api(pool_id) + "/{}/".format(job_id)
         return requests.post(api, headers=self.get_auth())
 
+def detect_encoding(file):
+    detector = UniversalDetector()
+    detector.reset()
+
+    with open(file, 'rb') as file_detect:
+        lines_to_analyze = file_detect.readlines(50000)
+
+    for line in lines_to_analyze:
+        detector.feed(line)
+        if detector.done: break
+    detector.close()
+    enc = detector.result['encoding'].lower()
+    print('encoding:', enc,'\n')
+    if enc == 'ascii':
+        enc = 'utf-8'
+        print('determined encoding to be ascii, using utf-8 nonetheless as this has been less prone to errors in the past.')
+    return enc
+
+def determine_dialect(file):
+    sniffer = csv.Sniffer()
+    sniffer.preferred = [';', ',', '\t']
+    dialect = ''
+    with open(file, mode='r', encoding=enc, errors='replace') as f:
+        try:
+            dialect = sniffer.sniff(f.read(4096))
+            delimiter = dialect.delimiter
+            quotechar = dialect.quotechar
+            escapechar = dialect.escapechar
+        except:
+            print('sniffer was unsuccessful, using a simplistic approach to determine the delimiter.')
+            line1 = f.readline()
+            delim = dict()
+            for i in [';', ',', '\t']:
+                delim[i] = len(line1.split(i))
+            delimiter = sorted(delim.items(), key=lambda kv: kv[1])[-1][0]
+            quotechar = '"'
+            escapechar = None
+    print('delimiter:', delimiter, ' quotechar:', quotechar,
+          ' escapechar:', escapechar)
+    return {'delimiter':delimiter, 'quotechar':quotechar, 'escapechar':escapechar}
 
 def import_file(file, folder) :
     # determine delimiter of csv file
@@ -151,49 +188,21 @@ def import_file(file, folder) :
     df = None
     print(ending(file))
     if ending(file) == 'csv':
-        sniffer = csv.Sniffer()
-        sniffer.preferred = [';', ',', '\t']
-        dialect = ''
+        # determine encoding and dialect
+        enc = detect_encoding(file)
+        dialect = determine_dialect(file)
+        delimiter = dialect['delimiter']
+        quotechar = dialect['quotechar']
+        escapechar = dialect['escapechar']
 
-        detector = UniversalDetector()
-        detector.reset()
-
-        with open(file, 'rb') as file_detect:
-            lines_to_analyze = file_detect.readlines(50000)
-
-        for line in lines_to_analyze:
-            detector.feed(line)
-            if detector.done: break
-        detector.close()
-        enc = detector.result['encoding'].lower()
-        print('encoding:', enc,'\n')
-        if enc == 'ascii':
-            enc = 'utf-8'
-            print('determined encoding to be ascii, using utf-8 nonetheless as this has been less prone to errors in the past.')
-
-        with open(file, mode='r', encoding=enc, errors='replace') as f:
-            try:
-                dialect = sniffer.sniff(f.read(4096))
-                delimiter = dialect.delimiter
-                quotechar = dialect.quotechar
-                escapechar = dialect.escapechar
-            except:
-                print('sniffer was unsuccessful, using a simplistic approach to determine the delimiter.')
-                line1 = f.readline()
-                delim = dict()
-                for i in [';', ',', '\t']:
-                    delim[i] = len(line1.split(i))
-                delimiter = sorted(delim.items(), key=lambda kv: kv[1])[-1][0]
-                quotechar = '"'
-                escapechar = None
-        print('delimiter:', delimiter, ' quotechar:', quotechar,
-              ' escapechar:', escapechar)
         # TODO: make it have 3 tries and just change variables as exception
         try:
+            print('start reading csv file')
             df = pd.read_csv(file, low_memory=False, encoding=enc,
                              sep=delimiter, error_bad_lines=False, parse_dates=True,
                              warn_bad_lines=True, quotechar=quotechar,
                              escapechar=escapechar)
+            print('csv file successfully imported')
         except Exception as f:
             print(f)
             try:
@@ -209,13 +218,6 @@ def import_file(file, folder) :
                 df = pd.read_csv(file, encoding=enc, sep=delimiter, error_bad_lines=False,
                                  parse_dates=True, warn_bad_lines=True, quotechar=quotechar,
                                  escapechar=escapechar, chunksize=200, dtype=col_types)
-                """
-                with open(file, mode='r', encoding=enc, errors='replace') as file_backup:
-                    df = pd.read_csv(file_backup, sep=delimiter,
-                                     error_bad_lines=False, warn_bad_lines=True,
-                                     quotechar=quotechar,
-                                     escapechar=escapechar, chunksize=500000)
-                """
             except Exception as e:
                 print('errorhandling failed, unable to read file:', file,
                       '\nerror is', e)
@@ -255,7 +257,6 @@ def create_folders(files, path):
             os.makedirs(fldr)
     return return_dict
 
-# TODO: change to fastparquet
 def generate_parquet_file(df, folder):
     file = os.path.split(folder)[1]
     if type(df) is pd.DataFrame:
@@ -265,14 +266,16 @@ def generate_parquet_file(df, folder):
             fp.write(tmp_filename, df.iloc[pos:pos+chunksize,:], compression='SNAPPY', write_index=False, times='int96')
     else:
         suffix = 0
+        chunk_counter = 0
         for i in df:
             tmp_filename = os.path.join(folder, ''.join([file, str(suffix), '.parquet']))
-            try:
+            try: # this try / except block functions as safeguard against columns that have been cast partially wrong
                 fp.write(tmp_filename, i, compression='SNAPPY', write_index=False, times='int96')
             except:
-                pass
+                chunk_counter += 1
             suffix += 1
-
+        if chunk_counter > 0:
+            print(str(chunk_counter), 'chunks were lost.')
 # =============================================================================
 #                 ___  ___       ___   _   __   _        _____   _   _   __   _   _____   _____   _   _____   __   _
 #                /   |/   |     /   | | | |  \ | |      |  ___| | | | | |  \ | | /  ___| |_   _| | | /  _  \ |  \ | |
@@ -296,9 +299,7 @@ if cl.transformation == 1:
 
     transformationdir = sort_abap(transformationdir_general)
     if transformationdir:
-        sample = '''POIUZTREWQLKJHGFDSAMNBVCXYpoiuztrewqlkjhgfdsamnbvcxy0987654\
-321POIUZTREWQLKJHGFDSAMNBVCXYpoiuztrewqlkjhgfdsamnbvcxy0987654321POIUZTREWQLKJH\
-GFDSAMNBVCXYpoiuztrewqlkjhgfdsamnbvcxy0987654321'''
+        sample = 'POIUZTREWQLKJHGFDSAMNBVCXYpoiuztrewqlkjhgfdsamnbvcxy0987654321'
         availablememory = str(int(((psutil.virtual_memory().free)/1024.0**2)*0.95))
         jar = glob.glob('connector*.jar')[0]
         cmdlist = ('java -Xmx', availablememory,
@@ -316,6 +317,11 @@ GFDSAMNBVCXYpoiuztrewqlkjhgfdsamnbvcxy0987654321'''
                 print(data)
                 with open(sample_name, 'a') as tmp_output:
                     tmp_output.write(data)
+
+        # ======================================================================
+        # Opening the output file to find the errors and keep them in the log
+        # TODO: Determine if this can also be achieved by utilizing stderr
+        # ======================================================================
         with open(sample_name, 'r') as tmp_file:
             tmp_file_read = tmp_file.read()
             error_logs = re.findall(re.compile('\[main\] ERROR(.*?)[0-9]{2}:[0-9]{2}:[0-9]{2}\.[0-9]{3} \[main\]', re.DOTALL), tmp_file_read)
@@ -347,6 +353,10 @@ GFDSAMNBVCXYpoiuztrewqlkjhgfdsamnbvcxy0987654321'''
             print(file, 'couldn\'t be transformed to parquet')
         print('\n')
 
+# =============================================================================
+# This part isn't needed anymore
+# =============================================================================
+"""
     if null_cols:
         with open(vertica_commands_file, 'w') as v:
             print('''Some columns needed to be modified for the upload to work.\
@@ -357,7 +367,7 @@ file in Vertica, to rectify this circumstance. "'''+vertica_commands_file+'"')
                     vertica_statement = ''.join(['UPDATE "', i, '" SET "', n,
                                                  '" = NULL;\n'])
                     v.write(vertica_statement)
-
+"""
 
 
 if cl.upload == 1:
@@ -394,11 +404,13 @@ if cl.upload == 1:
     print('Dirs to be uploaded:\n',dirs)
     uppie = cloud(tenant=tenant, realm=cluster, api_key=apikey)
     for dr in dirs :
-        if dr == '__pycache__' : continue
-        print('\nuploading:',dr.split('\\')[-1])
+        if dr == '__pycache__':
+            continue
+        # TODO: replace split \\ with os.path.split(file)[1])
+        print('\nuploading:', os.path.split(dr)[-1])
         jobhandle = uppie.create_job(pool_id=poolid,
                                      data_connection_id=connectionid,
-                                     targetName=dr.split('\\')[-1])
+                                     targetName=os.path.split(dr)[-1])
         jobstatus[jobhandle['id']] = False
         uppie.push_new_dir(pool_id=poolid, job_id=jobhandle['id'], dir_path=dr)
         uppie.submit_job(pool_id=poolid, job_id=jobhandle['id'])
@@ -408,7 +420,6 @@ update every 15 seconds. Logs will be written to:''', logname)
     with open(logname, 'a') as fh:
         fh.write('\n\nUpload log:\n')
         while running:
-            time.sleep(15)
             jobs = uppie.list_jobs(poolid)
             for jobids in jobstatus:
                 for i in jobs:
@@ -434,4 +445,5 @@ update every 15 seconds. Logs will be written to:''', logname)
                         break
             if all(status == True for status in jobstatus.values()):
                 running = False
+            time.sleep(15)
 print('all done')
