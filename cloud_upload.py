@@ -286,11 +286,12 @@ def generate_parquet_file(df, folder):
 #
 # =============================================================================
 
-vertica_commands_file = ''.join([datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S'),'_vertica_commands_file.sql'])
-
-global null_cols
-null_cols = defaultdict(list)
-
+# Probably not needed anymore
+"""
+#vertica_commands_file = ''.join([datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S'),'_vertica_commands_file.sql'])
+#global null_cols
+#null_cols = defaultdict(list)
+"""
 logname = ''.join([datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S'), '_uploader.log'])
 
 dir_path = os.path.normpath(cl.outputdir)
@@ -299,6 +300,10 @@ if cl.transformation == 1:
 
     transformationdir = sort_abap(transformationdir_general)
     if transformationdir:
+        # ======================================================================
+        # start multiple processes in parallel using: psutil.cpu_count()
+        # to achieve this make sort_abap create a subfolder per header
+        # ======================================================================
         sample = 'POIUZTREWQLKJHGFDSAMNBVCXYpoiuztrewqlkjhgfdsamnbvcxy0987654321'
         availablememory = str(int(((psutil.virtual_memory().free)/1024.0**2)*0.95))
         jar = glob.glob('connector*.jar')[0]
