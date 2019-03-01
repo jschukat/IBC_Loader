@@ -263,6 +263,7 @@ def generate_parquet_file(df, folder):
         chunksize = 200000
         for pos in range(0, len(df), chunksize):
             tmp_filename = os.path.join(folder, ''.join([file, str(pos), '.parquet']))
+            print('writing chunk', tmp_filename, 'to disk')
             fp.write(tmp_filename, df.iloc[pos:pos+chunksize,:], compression='SNAPPY', write_index=False, times='int96')
     else:
         suffix = 0
@@ -271,6 +272,7 @@ def generate_parquet_file(df, folder):
             tmp_filename = os.path.join(folder, ''.join([file, str(suffix), '.parquet']))
             try: # this try / except block functions as safeguard against columns that have been cast partially wrong
                 fp.write(tmp_filename, i, compression='SNAPPY', write_index=False, times='int96')
+                print('writing chunk', tmp_filename, 'to disk')
             except:
                 chunk_counter += 1
             suffix += 1
