@@ -159,7 +159,7 @@ def detect_encoding(file):
         print('determined encoding to be ascii, using utf-8 nonetheless as this has been less prone to errors in the past.')
     return enc
 
-def determine_dialect(file):
+def determine_dialect(file, enc):
     sniffer = csv.Sniffer()
     sniffer.preferred = [';', ',', '\t']
     dialect = ''
@@ -190,7 +190,7 @@ def import_file(file, folder) :
     if ending(file) == 'csv':
         # determine encoding and dialect
         enc = detect_encoding(file)
-        dialect = determine_dialect(file)
+        dialect = determine_dialect(file, enc)
         delimiter = dialect['delimiter']
         quotechar = dialect['quotechar']
         escapechar = dialect['escapechar']
