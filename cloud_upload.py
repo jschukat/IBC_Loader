@@ -182,6 +182,30 @@ def determine_dialect(file, enc):
           ' escapechar:', escapechar)
     return {'delimiter':delimiter, 'quotechar':quotechar, 'escapechar':escapechar}
 
+def determine_number_format(file, encoding, delimiter):
+    counter = 0
+    lines = []
+    with open(file, mode='r', encoding=encoding) as f:
+        while counter < 20:
+            lines.append(f.readline())
+            counter += 1
+    number_format = {'eu': 0, 'us': 0}
+    for line in lines:
+        fields = line.split(delimiter)
+        for field in fields:
+            try:
+                if ',' in field and '.' in field and len(re.findall('([\d\.,]+)', field)[0]) == len(field):
+                    if len(field.split(',')[-1]) < len(field.split('.')[-1]):
+                        number_format['eu'] += 1
+                    else:
+                        number_format['us'] += 1
+            except:
+                pass
+    if number_format['eu'] > number_format['us']:
+        return {'thousands': '.', 'decimal': ','}
+    else:
+        return {'thousands': ',', 'decimal': '.'}
+
 def import_file(file, folder) :
     # determine delimiter of csv file
     # assumes normal encoding of the file
@@ -194,6 +218,9 @@ def import_file(file, folder) :
         delimiter = dialect['delimiter']
         quotechar = dialect['quotechar']
         escapechar = dialect['escapechar']
+        number_format = determine_number_format(file, enc, delimiter)
+        thousand = number_format['thousands']
+        dec = number_format['decimal']
 
         # TODO: make it have 3 tries and just change variables as exception
         # add UnicodeDecodeError open(file, mode='r', encoding=enc, errors='replace') as f:
@@ -202,7 +229,7 @@ def import_file(file, folder) :
             df = pd.read_csv(file, low_memory=False, encoding=enc,
                              sep=delimiter, error_bad_lines=False, parse_dates=True,
                              warn_bad_lines=True, quotechar=quotechar,
-                             escapechar=escapechar)
+                             escapechar=escapechar, thousands=thousand, decimal=dec)
             print('csv file successfully imported')
         except Exception as f:
             print(f)
@@ -211,14 +238,15 @@ def import_file(file, folder) :
                 df = pd.read_csv(file, low_memory=False, encoding=enc,
                                  sep=delimiter, error_bad_lines=False, parse_dates=True,
                                  warn_bad_lines=True, quotechar=quotechar,
-                                 escapechar=escapechar, nrows=200000)
+                                 escapechar=escapechar, nrows=200000, thousands=thousand, decimal=dec)
                 col_types = dict()
                 for i in range(len(df.dtypes)):
                     col_types[i] = df.dtypes[i]
 
                 df = pd.read_csv(file, encoding=enc, sep=delimiter, error_bad_lines=False,
                                  parse_dates=True, warn_bad_lines=True, quotechar=quotechar,
-                                 escapechar=escapechar, chunksize=200, dtype=col_types)
+                                 escapechar=escapechar, chunksize=200,
+                                 dtype=col_types, thousands=thousand, decimal=dec)
             except Exception as e:
                 print('errorhandling failed, unable to read file:', file,
                       '\nerror is', e)
