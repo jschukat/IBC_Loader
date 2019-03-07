@@ -287,6 +287,12 @@ def create_folders(files, path):
     return return_dict
 
 def generate_parquet_file(df, folder):
+    """This function transforms an input dataframe or dataframe iterator into
+    parquet files in the specified folder
+
+    Keyword arguments:
+    df -- pandas DataFrame or DataFrame iterator
+    folder -- folder where the parquet files are created as string"""
     file = os.path.split(folder)[1]
     if type(df) is pd.DataFrame:
         chunksize = 200000
@@ -328,7 +334,6 @@ logname = ''.join([datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S'), '_uplo
 dir_path = os.path.normpath(cl.outputdir)
 transformationdir_general = os.path.normpath(cl.inputdir)
 if cl.transformation == 1:
-
     transformationdir = sort_abap(transformationdir_general)
     if transformationdir:
         # ======================================================================
@@ -371,7 +376,6 @@ if cl.transformation == 1:
             else:
                 print('transforamtion finished.')
         os.remove(sample_name)
-
 
 
     files = files_left(transformationdir_general)
