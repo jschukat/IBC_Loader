@@ -277,8 +277,9 @@ def create_folders(files, path):
     return_dict = {}
     allowed = set('0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_-')
     for file in files:
+        file_without_ending = remove_ending(os.path.split(file)[1]).replace(' ', '_').replace('.', '_')
         folder_name = ''.join(filter(lambda x: x in allowed,
-                                     remove_ending(os.path.split(file)[1])))
+                                     file_without_ending))
         fldr = os.path.join(path, folder_name)
         return_dict[file] = fldr
         if not os.path.exists(fldr):
@@ -287,30 +288,41 @@ def create_folders(files, path):
     return return_dict
 
 def generate_parquet_file(df, folder):
-    """This function transforms an input dataframe or dataframe iterator into
+    """
+    This function transforms an input dataframe or dataframe iterator into
     parquet files in the specified folder
 
     Keyword arguments:
     df -- pandas DataFrame or DataFrame iterator
-    folder -- folder where the parquet files are created as string"""
+    folder -- folder where the parquet files are created as string
+
+    Return value:
+    None
+    """
     file = os.path.split(folder)[1]
     if type(df) is pd.DataFrame:
         chunksize = 200000
         for pos in range(0, len(df), chunksize):
-            tmp_filename = os.path.join(folder, ''.join([file, str(pos), '.parquet']))
+            tmp_filename = os.path.join(folder,
+                                        ''.join([file, str(pos), '.parquet']))
             print('writing chunk', tmp_filename, 'to disk')
-            fp.write(tmp_filename, df.iloc[pos:pos+chunksize,:], compression='SNAPPY', write_index=False, times='int96')
+            fp.write(tmp_filename, df.iloc[pos:pos+chunksize,:],
+                     compression='SNAPPY', write_index=False, times='int96')
     else:
         suffix = 0
         chunk_counter = 0
-        for i in df:
-            tmp_filename = os.path.join(folder, ''.join([file, str(suffix), '.parquet']))
-            try: # this try / except block functions as safeguard against columns that have been cast partially wrong
+        # this try / except block functions as safeguard against columns that
+        # have been cast partially wrong and thereby corrupt the whole dataframe
+        try:
+            for i in df:
+                tmp_filename = os.path.join(folder,
+                                            ''.join([file, str(suffix), '.parquet']))
                 fp.write(tmp_filename, i, compression='SNAPPY', write_index=False, times='int96')
                 print('writing chunk', tmp_filename, 'to disk')
-            except:
-                chunk_counter += 1
-            suffix += 1
+                suffix += 1
+        except:
+            chunk_counter += 1
+
         if chunk_counter > 0:
             print(str(chunk_counter), 'chunks were lost.')
 # =============================================================================
@@ -337,7 +349,7 @@ if cl.transformation == 1:
     transformationdir = sort_abap(transformationdir_general)
     if transformationdir:
         # ======================================================================
-        # start multiple processes in parallel using: psutil.cpu_count()
+        # TODO: start multiple processes in parallel using: psutil.cpu_count()
         # to achieve this make sort_abap create a subfolder per header
         # ======================================================================
         sample = 'POIUZTREWQLKJHGFDSAMNBVCXYpoiuztrewqlkjhgfdsamnbvcxy0987654321'
@@ -393,21 +405,6 @@ if cl.transformation == 1:
             print(file, 'couldn\'t be transformed to parquet')
         print('\n')
 
-# =============================================================================
-# This part isn't needed anymore
-# =============================================================================
-"""
-    if null_cols:
-        with open(vertica_commands_file, 'w') as v:
-            print('''Some columns needed to be modified for the upload to work.\
-After having uploaded the parquet files, please run the code from the following\
-file in Vertica, to rectify this circumstance. "'''+vertica_commands_file+'"')
-            for i in null_cols:
-                for n in null_cols[i]:
-                    vertica_statement = ''.join(['UPDATE "', i, '" SET "', n,
-                                                 '" = NULL;\n'])
-                    v.write(vertica_statement)
-"""
 
 
 if cl.upload == 1:
@@ -485,8 +482,11 @@ update every 15 seconds. Logs will be written to:''', logname)
                             else:
                                 print('job for',i['targetName'],'still running')
                             break
-                    except:
+                    except (KeyboardInterrupt, SystemExit):
+                        print('terminating program\n')
                         break
+                    except:
+                        pass
             if all(status == True for status in jobstatus.values()):
                 running = False
             time.sleep(15)
