@@ -52,14 +52,14 @@ def files_left(path):
 # =============================================================================
 def sort_abap(path):
 
-    t1 = glob.glob(''.join([path,'/*.csv']))
+    t1 = glob.glob(os.path.join(path,'*'))
     # =========================================================================
     # look for header files in all the csv files
     # =========================================================================
     headers = []
     for i in range(len(t1)):
         t1[i] = os.path.split(t1[i])[1]
-        header_name = re.findall('(.*)_HEADER_[0-9]{8}_[0-9]{6}.csv', t1[i])
+        header_name = re.findall('(.*)_HEADER_[0-9]{8}_[0-9]{6}.', t1[i])
         print(t1[i], header_name)
         if header_name:
             headers.append(header_name[0])
@@ -70,7 +70,7 @@ def sort_abap(path):
     #   If no files could be found return None
     # =========================================================================
     abap_dir = os.path.join(path, 'abap')
-    if headers or glob.glob(os.path.join(abap_dir, '*.csv')):
+    if headers or glob.glob(os.path.join(abap_dir, '*')):
         if not os.path.isdir(abap_dir):
             os.mkdir(abap_dir)
         # TODO: check if this can be made in one go (mass folder creation)
@@ -399,7 +399,7 @@ if cl.transformation == 1:
             transforamtioncmd = ''.join(cmdlist)
             print('starting transforamtion with the following command:\n',
                   transforamtioncmd)
-            
+
             with subprocess.Popen(transforamtioncmd, stdout=subprocess.PIPE,
                                   stderr=subprocess.STDOUT) as proc:
                 while proc.poll() is None:
