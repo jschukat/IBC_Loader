@@ -315,23 +315,26 @@ if cl.transformation == 1:
         # to achieve this make sort_abap create a subfolder per header
         # ======================================================================
         sample = 'POIUZTREWQLKJHGFDSAMNBVCXYpoiuztrewqlkjhgfdsamnbvcxy0987654321'
-        availablememory = str(int(((psutil.virtual_memory().free)/1024.0**2)*0.95))
-        jar = glob.glob('connector*.jar')[0]
-        cmdlist = ('java -Xmx', availablememory,
-                   'm -jar ', jar, ' convert "',
-                   transformationdir, '" "', dir_path, '" NONE')
-
-        transforamtioncmd = ''.join(cmdlist)
-        print('starting transforamtion with the following command:\n',
-              transforamtioncmd)
         sample_name = ''.join(numpy.random.choice([i for i in sample], size=20))
-        with subprocess.Popen(transforamtioncmd, stdout=subprocess.PIPE,
-                              stderr=subprocess.STDOUT) as proc:
-            while proc.poll() is None:
-                data = str(proc.stdout.readline(), 'utf-8')
-                print(data)
-                with open(sample_name, 'a') as tmp_output:
-                    tmp_output.write(data)
+        jar = glob.glob('connector*.jar')[0]
+        transformationfolders = [x for x in glob.glob(os.path.join(transformationdir, '*')) if os.path.isdir(x)]
+        while transformationfolders:
+            availablememory = str(int(((psutil.virtual_memory().free)/1024.0**2)*0.95))
+            cmdlist = ('java -Xmx', availablememory,
+                       'm -jar ', jar, ' convert "',
+                       transformationfolders.pop(), '" "', dir_path, '" NONE')
+
+            transforamtioncmd = ''.join(cmdlist)
+            print('starting transforamtion with the following command:\n',
+                  transforamtioncmd)
+            
+            with subprocess.Popen(transforamtioncmd, stdout=subprocess.PIPE,
+                                  stderr=subprocess.STDOUT) as proc:
+                while proc.poll() is None:
+                    data = str(proc.stdout.readline(), 'utf-8')
+                    print(data)
+                    with open(sample_name, 'a') as tmp_output:
+                        tmp_output.write(data)
 
         # ======================================================================
         # Opening the output file to find the errors and keep them in the log
