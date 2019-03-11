@@ -165,7 +165,7 @@ def determine_dialect(file, enc):
     dialect = ''
     with open(file, mode='r', encoding=enc, errors='replace') as f:
         try:
-            dialect = sniffer.sniff(f.read(4096))
+            dialect = sniffer.sniff(f.readline()) #changed to readline as this seems to yield better results
             delimiter = dialect.delimiter
             quotechar = dialect.quotechar
             escapechar = dialect.escapechar
