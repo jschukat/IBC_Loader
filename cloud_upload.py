@@ -73,10 +73,17 @@ def sort_abap(path):
     if headers or glob.glob(os.path.join(abap_dir, '*.csv')):
         if not os.path.isdir(abap_dir):
             os.mkdir(abap_dir)
+        # TODO: check if this can be made in one go (mass folder creation)
+        header_dict = dict()
+        for header_folder in headers:
+            header_path = os.path.join(abap_dir, header_folder)
+            if not os.path.isdir(header_path):
+                os.mkdir(header_path)
+            header_dict[header_folder] = header_path
         for file in t1:
-            for header in headers:
-                if header in file:
-                    shutil.move(os.path.join(path, file), abap_dir)
+            for header in header_dict.items():
+                if header[0] in file:
+                    shutil.move(os.path.join(path, file), header[1])
                     break
         return abap_dir
     else:
@@ -380,23 +387,26 @@ if cl.transformation == 1:
         # to achieve this make sort_abap create a subfolder per header
         # ======================================================================
         sample = 'POIUZTREWQLKJHGFDSAMNBVCXYpoiuztrewqlkjhgfdsamnbvcxy0987654321'
-        availablememory = str(int(((psutil.virtual_memory().free)/1024.0**2)*0.95))
-        jar = glob.glob('connector*.jar')[0]
-        cmdlist = ('java -Xmx', availablememory,
-                   'm -jar ', jar, ' convert "',
-                   transformationdir, '" "', dir_path, '" NONE')
-
-        transforamtioncmd = ''.join(cmdlist)
-        print('starting transforamtion with the following command:\n',
-              transforamtioncmd)
         sample_name = ''.join(numpy.random.choice([i for i in sample], size=20))
-        with subprocess.Popen(transforamtioncmd, stdout=subprocess.PIPE,
-                              stderr=subprocess.STDOUT) as proc:
-            while proc.poll() is None:
-                data = str(proc.stdout.readline(), 'utf-8')
-                print(data)
-                with open(sample_name, 'a') as tmp_output:
-                    tmp_output.write(data)
+        jar = glob.glob('connector*.jar')[0]
+        transformationfolders = [x for x in glob.glob(os.path.join(transformationdir, '*')) if os.path.isdir(x)]
+        while transformationfolders:
+            availablememory = str(int(((psutil.virtual_memory().free)/1024.0**2)*0.95))
+            cmdlist = ('java -Xmx', availablememory,
+                       'm -jar ', jar, ' convert "',
+                       transformationfolders.pop(), '" "', dir_path, '" NONE')
+
+            transforamtioncmd = ''.join(cmdlist)
+            print('starting transforamtion with the following command:\n',
+                  transforamtioncmd)
+            
+            with subprocess.Popen(transforamtioncmd, stdout=subprocess.PIPE,
+                                  stderr=subprocess.STDOUT) as proc:
+                while proc.poll() is None:
+                    data = str(proc.stdout.readline(), 'utf-8')
+                    print(data)
+                    with open(sample_name, 'a') as tmp_output:
+                        tmp_output.write(data)
 
         # ======================================================================
         # Opening the output file to find the errors and keep them in the log
