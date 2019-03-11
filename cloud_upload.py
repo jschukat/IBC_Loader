@@ -304,7 +304,7 @@ def remove_ending(files):
         return return_list[0]
 
 def ending(file):
-    return(os.path.split(file)[-1].lower())
+    return(file.split('.')[-1].lower())
 
 # TODO: Change folder naming to replace dots with underscores and so on
 def create_folders(files, path):
@@ -392,9 +392,20 @@ if cl.transformation == 1:
         transformationfolders = [x for x in glob.glob(os.path.join(transformationdir, '*')) if os.path.isdir(x)]
         while transformationfolders:
             availablememory = str(int(((psutil.virtual_memory().free)/1024.0**2)*0.95))
+            current_working_folder = transformationfolders.pop()
+            cwd_files = glob.glob(os.path.join(current_working_folder, '*'))
+            if all(map(lambda x: ending(x) == 'csv', cwd_files)):
+                compression = 'NONE'
+            elif any(map(lambda x: ending(x) == '7z', cwd_files)):
+                compression = 'SEVEN_ZIP'
+            elif any(map(lambda x: ending(x) == 'gzip' or ending(x) == 'gz', cwd_files)):
+                compression = 'GZIP'
+            else:
+                print('wrong file format in folder:', current_working_folder)
+                continue
             cmdlist = ('java -Xmx', availablememory,
                        'm -jar ', jar, ' convert "',
-                       transformationfolders.pop(), '" "', dir_path, '" NONE')
+                       current_working_folder, '" "', dir_path, '" ', compression)
 
             transforamtioncmd = ''.join(cmdlist)
             print('starting transforamtion with the following command:\n',
