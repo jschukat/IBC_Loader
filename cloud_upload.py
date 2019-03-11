@@ -159,28 +159,55 @@ def detect_encoding(file):
         print('determined encoding to be ascii, using utf-8 nonetheless as this has been less prone to errors in the past.')
     return enc
 
+def test_float(x):
+    '''
+    Function to determine if an imput can be converted to float
+    '''
+    try:
+        a = float(x)
+    except:
+        a = None
+    if a:
+        return True
+    else:
+        return False
+
 def determine_dialect(file, enc):
     sniffer = csv.Sniffer()
     sniffer.preferred = [';', ',', '\t']
     dialect = ''
+    data = []
+    counter = 0
     with open(file, mode='r', encoding=enc, errors='replace') as f:
-        try:
-            dialect = sniffer.sniff(f.readline()) #changed to readline as this seems to yield better results
-            delimiter = dialect.delimiter
-            quotechar = dialect.quotechar
-            escapechar = dialect.escapechar
-        except:
-            print('sniffer was unsuccessful, using a simplistic approach to determine the delimiter.')
-            line1 = f.readline()
-            delim = dict()
-            for i in [';', ',', '\t']:
-                delim[i] = len(line1.split(i))
-            delimiter = sorted(delim.items(), key=lambda kv: kv[1])[-1][0]
-            quotechar = '"'
-            escapechar = None
+        for line in f:
+            data.append(line)
+            counter += 1
+            if counter == 10:
+                break
+    try:
+        data_str = ''.join(data)
+        dialect = sniffer.sniff(data_str)
+        delimiter = dialect.delimiter
+        quotechar = dialect.quotechar
+        escapechar = dialect.escapechar
+        header = sniffer.has_header(data_str)
+    except:
+        print('sniffer was unsuccessful, using a simplistic approach to determine the delimiter and existence of header.')
+        line1 = data[0]
+        delim = dict()
+        for i in [';', ',', '\t']:
+            delim[i] = len(line1.split(i))
+        delimiter = sorted(delim.items(), key=lambda kv: kv[1])[-1][0]
+        quotechar = '"'
+        escapechar = None
+        if any(map(test_float, line1.split(delimiter))):
+            header = False
+        else:
+            header = True
     print('delimiter:', delimiter, ' quotechar:', quotechar,
-          ' escapechar:', escapechar)
-    return {'delimiter':delimiter, 'quotechar':quotechar, 'escapechar':escapechar}
+          ' escapechar:', escapechar, ' header:', header)
+    return {'delimiter':delimiter, 'quotechar':quotechar,
+            'escapechar':escapechar, 'header':header}
 
 def determine_number_format(file, encoding, delimiter):
     counter = 0
