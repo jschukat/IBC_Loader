@@ -403,9 +403,16 @@ if cl.transformation == 1:
                 compression = 'GZIP'
             elif any(map(lambda x: ending(x) == 'zip', cwd_files)):
                 for i in glob.glob(os.path.join(current_working_folder, '*.zip')):
-                    zip_ref = zipfile.ZipFile(i, 'r')
-                    zip_ref.extractall(current_working_folder)
-                    zip_ref.close()
+                    with zipfile.ZipFile(i, 'r') as zip_ref:
+                        zip_ref.extractall(current_working_folder)
+                    root = current_working_folder
+                    tree = list(os.walk(root))
+                    del tree[0]
+                    while tree:
+                        work_item = tree.pop()
+                        if work_item[-1]:
+                            for i in work_item[-1]:
+                                shutil.move(os.path.join(work_item[0], i), root)
                 compression = 'NONE'
             else:
                 print('wrong file format in folder:', current_working_folder)
