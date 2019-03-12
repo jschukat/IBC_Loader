@@ -11,6 +11,7 @@ try:
     import subprocess
     import numpy
     import glob
+    import zipfile
     import shutil
     import fastparquet as fp
     import snappy
@@ -400,6 +401,12 @@ if cl.transformation == 1:
                 compression = 'SEVEN_ZIP'
             elif any(map(lambda x: ending(x) == 'gzip' or ending(x) == 'gz', cwd_files)):
                 compression = 'GZIP'
+            elif any(map(lambda x: ending(x) == 'zip', cwd_files)):
+                for i in glob.glob(os.path.join(current_working_folder, '*.zip')):
+                    zip_ref = zipfile.ZipFile(i, 'r')
+                    zip_ref.extractall(current_working_folder)
+                    zip_ref.close()
+                compression = 'NONE'
             else:
                 print('wrong file format in folder:', current_working_folder)
                 continue
