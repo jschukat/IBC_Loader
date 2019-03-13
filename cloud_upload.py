@@ -315,12 +315,16 @@ def create_folders(files, path):
         file_without_ending = remove_ending(os.path.split(file)[1]).replace(' ', '_').replace('.', '_')
         folder_name = ''.join(filter(lambda x: x in allowed,
                                      file_without_ending))
-        fldr = os.path.join(path, folder_name)
-        return_dict[file] = fldr
+        return_dict[file] = create_folder(path, folder_name)
+    return return_dict
+
+def create_folder(path, name):
+        fldr = os.path.join(path, name)
         if not os.path.exists(fldr):
             print('create:', fldr)
             os.makedirs(fldr)
-    return return_dict
+        return fldr
+
 
 def generate_parquet_file(df, folder):
     """
@@ -402,17 +406,22 @@ if cl.transformation == 1:
             elif any(map(lambda x: ending(x) == 'gzip' or ending(x) == 'gz', cwd_files)):
                 compression = 'GZIP'
             elif any(map(lambda x: ending(x) == 'zip', cwd_files)):
+                done = create_folder(current_working_folder, 'done')
                 for i in glob.glob(os.path.join(current_working_folder, '*.zip')):
                     with zipfile.ZipFile(i, 'r') as zip_ref:
                         zip_ref.extractall(current_working_folder)
-                    root = current_working_folder
-                    tree = list(os.walk(root))
-                    del tree[0]
-                    while tree:
-                        work_item = tree.pop()
-                        if work_item[-1]:
-                            for i in work_item[-1]:
-                                shutil.move(os.path.join(work_item[0], i), root)
+                    shutil.move(i, done)
+                root = current_working_folder
+                tree = list(os.walk(root))
+                del tree[0]
+                while tree:
+                    work_item = tree.pop()
+                    if work_item[-1]:
+                        for i in work_item[-1]:
+                            shutil.move(os.path.join(work_item[0], i), root)
+                for i in [x for x in glob.glob(os.path.join(current_working_folder, '*')) if os.path.isdir(x)]:
+                    if os.path.split(i)[-1] != 'done':
+                        shutil.rmtree(i)
                 compression = 'NONE'
             else:
                 print('wrong file format in folder:', current_working_folder)
