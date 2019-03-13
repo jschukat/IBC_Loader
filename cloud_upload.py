@@ -410,7 +410,6 @@ if cl.transformation == 1:
                 for i in glob.glob(os.path.join(current_working_folder, '*.zip')):
                     with zipfile.ZipFile(i, 'r') as zip_ref:
                         zip_ref.extractall(current_working_folder)
-                    shutil.move(i, done)
                 root = current_working_folder
                 tree = list(os.walk(root))
                 del tree[0]
@@ -422,6 +421,8 @@ if cl.transformation == 1:
                 for i in [x for x in glob.glob(os.path.join(current_working_folder, '*')) if os.path.isdir(x)]:
                     if os.path.split(i)[-1] != 'done':
                         shutil.rmtree(i)
+                for i in glob.glob(os.path.join(current_working_folder, '*.zip')):
+                    shutil.move(i, done)
                 compression = 'NONE'
             else:
                 print('wrong file format in folder:', current_working_folder)
