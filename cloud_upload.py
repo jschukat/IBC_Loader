@@ -420,7 +420,7 @@ if cl.transformation == 1:
                             shutil.move(os.path.join(work_item[0], i), root)
                 for i in [x for x in glob.glob(os.path.join(current_working_folder, '*')) if os.path.isdir(x)]:
                     if os.path.split(i)[-1] != 'done':
-                        shutil.rmtree(i)
+                        shutil.rmtree(i, ignore_errors=True)
                 for i in glob.glob(os.path.join(current_working_folder, '*.zip')):
                     shutil.move(i, done)
                 compression = 'NONE'
