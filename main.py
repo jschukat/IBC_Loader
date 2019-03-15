@@ -21,7 +21,7 @@ pkgs = os.popen('pip freeze').read()
 for pkg in ['psutil', 'requests']:
     if pkg not in pkgs:
         print('\ninstalling', pkg)
-        cmd = ''.join(['pip install ', pkg])
+        cmd = ''.join(['pip install --user ', pkg])
         os.system(cmd)
 
 fast = os.popen('conda list').read()

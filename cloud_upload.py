@@ -406,6 +406,8 @@ if cl.transformation == 1:
             elif any(map(lambda x: ending(x) == 'gzip' or ending(x) == 'gz', cwd_files)):
                 compression = 'GZIP'
             elif any(map(lambda x: ending(x) == 'zip', cwd_files)):
+                # TODO: move moving zips to the extraction part so that finished zips
+                # don't get mixed up with unfinished zips
                 done = create_folder(current_working_folder, 'done')
                 for i in glob.glob(os.path.join(current_working_folder, '*.zip')):
                     with zipfile.ZipFile(i, 'r') as zip_ref:
