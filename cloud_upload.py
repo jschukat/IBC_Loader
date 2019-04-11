@@ -263,7 +263,7 @@ def import_file(file, folder) :
             print('start reading csv file')
             df = pd.read_csv(file, low_memory=False, encoding=enc,
                              sep=delimiter, error_bad_lines=False, parse_dates=True,
-                             warn_bad_lines=True, quotechar=quotechar,
+                             warn_bad_lines=True, quotechar=quotechar, skipna=True,
                              escapechar=escapechar, thousands=thousand, decimal=dec)
             print('csv file successfully imported')
         except Exception as f:
@@ -272,7 +272,7 @@ def import_file(file, folder) :
                 print('error handling mode')
                 df = pd.read_csv(file, low_memory=False, encoding=enc,
                                  sep=delimiter, error_bad_lines=False, parse_dates=True,
-                                 warn_bad_lines=True, quotechar=quotechar,
+                                 warn_bad_lines=True, quotechar=quotechar, skipna=True,
                                  escapechar=escapechar, nrows=200000, thousands=thousand, decimal=dec)
                 col_types = dict()
                 for i in range(len(df.dtypes)):
@@ -280,7 +280,7 @@ def import_file(file, folder) :
 
                 df = pd.read_csv(file, encoding=enc, sep=delimiter, error_bad_lines=False,
                                  parse_dates=True, warn_bad_lines=True, quotechar=quotechar,
-                                 escapechar=escapechar, chunksize=200,
+                                 escapechar=escapechar, chunksize=200, skipna=True,
                                  dtype=col_types, thousands=thousand, decimal=dec)
             except Exception as e:
                 print('errorhandling failed, unable to read file:', file,
