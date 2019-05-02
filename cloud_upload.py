@@ -36,10 +36,12 @@ def files_left(path):
     t1 = glob.glob(''.join([path,'/*.csv']))
     t2 = glob.glob(''.join([path,'/*.xls']))
     t3 = glob.glob(''.join([path,'/*.xlsx']))
+    t4 = glob.glob(''.join([path,'/*.xlsx']))
     left_overs = []
     left_overs.extend(t1)
     left_overs.extend(t2)
     left_overs.extend(t3)
+    left_overs.extend(t4)
     return left_overs
 
 # =============================================================================
