@@ -285,6 +285,15 @@ def import_file(file, folder) :
             except Exception as e:
                 print('errorhandling failed, unable to read file:', file,
                       '\nerror is', e)
+    if ending(file) == 'xlsb':
+        try:
+            from pyxlsb import open_workbook as open_xlsb
+            df_lst = []
+            with open_xlsb(file) as wb:
+                with wb.get_sheet(1) as sheet:
+                    for row in sheet.rows():
+                        df.append([item.v for item in row])
+            df = pd.DataFrame(df_lst[1:], columns=df[0])
     else:
         try:
             df = pd.read_excel(file)
