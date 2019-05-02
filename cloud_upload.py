@@ -19,6 +19,7 @@ try:
     import csv
     from chardet.universaldetector import UniversalDetector
     from collections import defaultdict
+    from pyxlsb import open_workbook as open_xlsb
 except ModuleNotFoundError as e:
     print(e)
     print('please install missing packages to use this program.')
@@ -289,13 +290,12 @@ def import_file(file, folder) :
                       '\nerror is', e)
     if ending(file) == 'xlsb':
         try:
-            from pyxlsb import open_workbook as open_xlsb
             df_lst = []
             with open_xlsb(file) as wb:
                 with wb.get_sheet(1) as sheet:
                     for row in sheet.rows():
                         df_lst.append([item.v for item in row])
-            df = pd.DataFrame(df_lst[1:], columns=df[0])
+            df = pd.DataFrame(df_lst[1:], columns=df_lst[0])
         except ModuleNotFoundError as e:
             print(e)
             print('please install missing packages to use this program.')
