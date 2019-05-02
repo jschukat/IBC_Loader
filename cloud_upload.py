@@ -296,6 +296,13 @@ def import_file(file, folder) :
                     for row in sheet.rows():
                         df.append([item.v for item in row])
             df = pd.DataFrame(df_lst[1:], columns=df[0])
+        except ModuleNotFoundError as e:
+            print(e)
+            print('please install missing packages to use this program.')
+            print('shutting down')
+            quit()
+        except Exception as e:
+            print('unable to read', file, 'with the following error:', e)
     else:
         try:
             df = pd.read_excel(file)

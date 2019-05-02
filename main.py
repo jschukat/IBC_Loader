@@ -18,7 +18,7 @@ if flag == 1:
 
 pkgs = os.popen('pip freeze').read()
 
-for pkg in ['psutil', 'requests']:
+for pkg in ['psutil', 'requests', 'pyxlsb']:
     if pkg not in pkgs:
         print('\ninstalling', pkg)
         cmd = ''.join(['pip install --user ', pkg])
