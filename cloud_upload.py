@@ -86,7 +86,7 @@ def sort_abap(path):
             header_dict[header_folder] = header_path
         for file in t1:
             for header in header_dict.items():
-                if ''.join([header[0], '_') in file:
+                if ''.join([header[0], '_']) in file:
                     shutil.move(os.path.join(path, file), header[1])
                     break
         return abap_dir
