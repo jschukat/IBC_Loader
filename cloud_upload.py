@@ -294,7 +294,7 @@ def import_file(file, folder) :
             with open_xlsb(file) as wb:
                 with wb.get_sheet(1) as sheet:
                     for row in sheet.rows():
-                        df.append([item.v for item in row])
+                        df_lst.append([item.v for item in row])
             df = pd.DataFrame(df_lst[1:], columns=df[0])
         except ModuleNotFoundError as e:
             print(e)
