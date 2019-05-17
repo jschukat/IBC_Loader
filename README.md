@@ -6,3 +6,6 @@ TO TRANSFORM ABAP OUTPUT AN EXTRA FILE IS NEEDED:
   folder containing all the python files.
 
 2) Run the upload_parquet.bat file and follow the instructions in the newly opened window
+
+
+For feedback please contact j.schukat (at) celonis.com
