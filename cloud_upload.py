@@ -56,7 +56,7 @@ def files_left(path):
 # =============================================================================
 def sort_abap(path):
     t1 = glob.glob(os.path.join(path,'*'))
-    for file in files:
+    for file in t1:
         splt = file.split('.')
         if len(splt) > 2:
             re = '.'.join(['_'.join(splt[:-1]), splt[-1]])
