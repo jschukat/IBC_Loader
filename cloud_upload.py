@@ -61,6 +61,7 @@ def sort_abap(path):
         if len(splt) > 2:
             re = '.'.join(['_'.join(splt[:-1]), splt[-1]])
             os.rename(file, re)
+    t1 = glob.glob(os.path.join(path,'*'))
     # =========================================================================
     # look for header files in all the csv files
     # =========================================================================
