@@ -55,8 +55,12 @@ def files_left(path):
 # OUT:  directory as string or None
 # =============================================================================
 def sort_abap(path):
-
     t1 = glob.glob(os.path.join(path,'*'))
+    for file in files:
+        splt = file.split('.')
+        if len(splt) > 2:
+            re = '.'.join(['_'.join(splt[:-1]), splt[-1]])
+            os.rename(file, re)
     # =========================================================================
     # look for header files in all the csv files
     # =========================================================================
