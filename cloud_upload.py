@@ -15,6 +15,7 @@ try:
     import shutil
     import fastparquet as fp
     import snappy
+    import gzip
     import pandas as pd
     import csv
     from chardet.universaldetector import UniversalDetector
@@ -428,6 +429,12 @@ if cl.transformation == 1:
                 compression = 'SEVEN_ZIP'
             elif any(map(lambda x: ending(x) == 'gzip' or ending(x) == 'gz', cwd_files)):
                 compression = 'GZIP'
+                for file in cwd_files:
+                    if 'HEADER' in file:
+                        name = file.split('.')[0]
+                        with gzip.open(file, 'rb') as f_in:
+                            with open('.'.join([name, 'csv']), 'wb') as f_out:
+                                shutil.copyfileobj(f_in, f_out)
             elif any(map(lambda x: ending(x) == 'zip', cwd_files)):
                 # TODO: move moving zips to the extraction part so that finished zips
                 # don't get mixed up with unfinished zips
