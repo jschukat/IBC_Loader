@@ -60,7 +60,10 @@ def sort_abap(path):
     for file in t1:
         splt = file.split('.')
         if len(splt) > 2:
-            newname = '.'.join(['_'.join(splt[:-1]), splt[-1]])
+            if splt[-2] == 'csv':
+                newname = '.'.join(['_'.join(splt[:-2]), splt[-2], splt[-1]])
+            else:
+                newname = '.'.join(['_'.join(splt[:-1]), splt[-1]])
             os.rename(file, newname)
     t1 = glob.glob(os.path.join(path,'*'))
     # =========================================================================
