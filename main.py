@@ -112,8 +112,9 @@ def runlolarun():
     de = deltaflag.get()
     # if co == defaultConnectionid:
     #     co = ''
-    out = textoutput.get()
-    inp = textinput.get()
+    out = textoutput.get()#.encode('ansi').decode('utf-8')
+    inp = textinput.get()#.encode('ansi').decode('utf-8')
+    print(out, inp)
     with open('cloud_upload_config.py', 'w+') as conffile:
         conffile.write("""# Example: url of cloud team: https://demo.eu-1.celonis.cloud/
 # tenant = 'demo'
