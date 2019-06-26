@@ -215,10 +215,10 @@ def determine_dialect(file, enc):
         print('sniffer was unsuccessful, using a simplistic approach to determine the delimiter and existence of header.')
         line1 = data[0]
         delim = dict()
-        for i in [';', ',', '\t']:
+        for i in [';', ',', '\t', '|']:
             delim[i] = len(line1.split(i))
         delimiter = sorted(delim.items(), key=lambda kv: kv[1])[-1][0]
-        quotechar = '"'
+        quotechar = None
         escapechar = None
         if any(map(test_float, line1.split(delimiter))):
             header = False
