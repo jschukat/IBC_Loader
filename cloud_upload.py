@@ -282,6 +282,7 @@ def import_file(file, folder) :
             print(f)
             try:
                 print('error handling mode')
+                time.sleep(1)
                 df = pd.read_csv(file, low_memory=False, encoding=enc,
                                  sep=delimiter, error_bad_lines=False, parse_dates=True,
                                  warn_bad_lines=True, quotechar=quotechar, skip_blank_lines=True,
@@ -289,7 +290,7 @@ def import_file(file, folder) :
                 col_types = dict()
                 for i in range(len(df.dtypes)):
                     col_types[i] = df.dtypes[i]
-
+                time.sleep(1)
                 df = pd.read_csv(file, encoding=enc, sep=delimiter, error_bad_lines=False,
                                  parse_dates=True, warn_bad_lines=True, quotechar=quotechar,
                                  escapechar=escapechar, chunksize=200, skip_blank_lines=True,
