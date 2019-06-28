@@ -299,7 +299,7 @@ def import_file(file, folder) :
             except Exception as e:
                 print('errorhandling failed, unable to read file:', file,
                       '\nerror is', e)
-    if ending(file) == 'xlsb':
+    elif ending(file) == 'xlsb':
         try:
             df_lst = []
             with open_xlsb(file) as wb:
