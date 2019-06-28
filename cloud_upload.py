@@ -58,13 +58,13 @@ def files_left(path):
 def sort_abap(path):
     t1 = glob.glob(os.path.join(path,'*'))
     for file in t1:
-        splt = file.split('.')
+        splt = os.path.basename(file).split('.')
         if len(splt) > 2:
             print(f'found file to rename: {file}')
             if splt[-2] == 'csv':
-                newname = '.'.join(['_'.join(splt[:-2]), splt[-2], splt[-1]])
+                newname = '.'.join([os.path.dirname(file), '_'.join(splt[:-2]), splt[-2], splt[-1]])
             else:
-                newname = '.'.join(['_'.join(splt[:-1]), splt[-1]])
+                newname = '.'.join([os.path.dirname(file), '_'.join(splt[:-1]), splt[-1]])
             os.rename(file, newname)
     t1 = glob.glob(os.path.join(path,'*'))
     # =========================================================================
