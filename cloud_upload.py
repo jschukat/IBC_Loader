@@ -393,7 +393,6 @@ def generate_parquet_file(df, folder):
                 df2 = df2.append(i)
         except:
             chunk_counter += 1
-
         if chunk_counter > 0:
             print(str(chunk_counter), 'chunks were lost.')
         df_concat = pd.concat(df2, ignore_index=True)
