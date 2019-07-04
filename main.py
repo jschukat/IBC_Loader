@@ -110,6 +110,7 @@ def runlolarun():
     tr = transformationflag.get()
     up = uploadflag.get()
     de = deltaflag.get()
+    st = stringflag.get()
     # if co == defaultConnectionid:
     #     co = ''
     out = textoutput.get()#.encode('ansi').decode('utf-8')
@@ -128,7 +129,8 @@ outputdir = '{}'
 inputdir = '{}'
 transformation = {}
 upload = {}
-delta = {}\n""".format(ur, ap, out, inp, tr, up, de))
+delta = {}
+as_string = {}\n""".format(ur, ap, out, inp, tr, up, de, st))
     print('saved to config.')
     cmd = ''.join(['python.exe "', os.path.join(os.getcwd(),
                    'cloud_upload.py'), '"'])
@@ -314,7 +316,14 @@ if ctc.delta == 1:
 else:
     deltaflag.set(0)
 
-
+stringflag = IntVar()
+stringbutton = Checkbutton(framebuttons, text='all coulmns as string',
+                           variable=stringflag, command=setButtonTitle)
+stringbutton.grid(row=0, column=4, sticky='WE', padx=10, pady=5)
+if ctc.delta == 1:
+    stringflag.set(1)
+else:
+    stringflag.set(0)
 
 
 

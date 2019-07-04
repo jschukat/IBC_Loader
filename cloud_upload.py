@@ -319,8 +319,10 @@ def import_file(file, folder) :
             df = pd.read_excel(file)
         except Exception as e:
             print('unable to read', file, 'with the following error:', e)
-
-    return df
+    if cl.as_string:
+        return df.astype(str)
+    else:
+        return df
 
 def remove_ending(files):
     if isinstance(files, (str,)):
