@@ -531,7 +531,7 @@ if cl.upload == 1:
     connectionflag = 1
     try:
         parts.append(re.search('https://([a-z0-9-]+)\.', url).groups()[0])
-        parts.append(re.search('\.([eus]+-1)\.celonis', url).groups()[0])
+        parts.append(re.search('\.([a-z0-9-]+)\.celonis', url).groups()[0])
         parts.append(re.search('ui/pools/([a-z0-9-]+)', url).groups()[0])
         try:
             parts.append(re.search('data-connections/[a-z]+/([a-z0-9-]+)', url)

@@ -317,7 +317,7 @@ else:
     deltaflag.set(0)
 
 stringflag = IntVar()
-stringbutton = Checkbutton(framebuttons, text='all coulmns as string',
+stringbutton = Checkbutton(framebuttons, text='all columns as string',
                            variable=stringflag, command=setButtonTitle)
 stringbutton.grid(row=0, column=4, sticky='WE', padx=10, pady=5)
 if ctc.delta == 1:
