@@ -422,26 +422,29 @@ def generate_parquet_file(df, folder):
             fp.write(tmp_filename, df.iloc[pos:pos+chunksize,:],
                      compression='SNAPPY', write_index=False, times='int96')
     else:
-        #suffix = 0
-        chunk_counter = 0
+        suffix = 0
+        #chunk_counter = 0
         # this try / except block functions as safeguard against columns that
         # have been cast partially wrong and thereby corrupt the whole dataframe
         # TODO: Make this part recursive, so that it creates a new df which is a sum of all the
-        df2 = []
+        #df2 = []
         try:
             for i in df:
-                #tmp_filename = os.path.join(folder,
-                #                            ''.join([file, str(suffix), '.parquet']))
-                #fp.write(tmp_filename, i, compression='SNAPPY', write_index=False, times='int96')
-                #print('writing chunk', tmp_filename, 'to disk')
-                #suffix += 1
-                df2 = df2.append(i)
-        except:
-            chunk_counter += 1
+                tmp_filename = os.path.join(folder,
+                                            ''.join([file, str(suffix), '.parquet']))
+                fp.write(tmp_filename, i, compression='SNAPPY', write_index=False, times='int96')
+                print('writing chunk', tmp_filename, 'to disk')
+                suffix += 1
+                #df2 = df2.append(i)
+        except Exception as e:
+            #chunk_counter += 1
+            print(e)
+        """
         if chunk_counter > 0:
             print(str(chunk_counter), 'chunks were lost.')
         df_concat = pd.concat(df2, ignore_index=True)
         generate_parquet_file(df_concat, folder)
+        """
 # =============================================================================
 #                 ___  ___       ___   _   __   _        _____   _   _   __   _   _____   _____   _   _____   __   _
 #                /   |/   |     /   | | | |  \ | |      |  ___| | | | | |  \ | | /  ___| |_   _| | | /  _  \ |  \ | |
