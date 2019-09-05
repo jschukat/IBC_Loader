@@ -362,7 +362,7 @@ def import_file(file, folder) :
             df = pd.read_excel(file)
         except Exception as e:
             print('unable to read', file, 'with the following error:', e)
-    if cl.as_string:
+    if type(df) is pd.DataFrame and cl.as_string:
         return df.astype(str)
     else:
         return df
