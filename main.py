@@ -320,7 +320,7 @@ stringflag = IntVar()
 stringbutton = Checkbutton(framebuttons, text='all columns as string',
                            variable=stringflag, command=setButtonTitle)
 stringbutton.grid(row=0, column=4, sticky='WE', padx=10, pady=5)
-if ctc.delta == 1:
+if ctc.as_string == 1:
     stringflag.set(1)
 else:
     stringflag.set(0)
