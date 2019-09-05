@@ -414,6 +414,7 @@ def generate_parquet_file(df, folder):
     """
     file = os.path.split(folder)[1]
     if type(df) is pd.DataFrame:
+        print('starting to write dataframe to disk')
         chunksize = 200000
         for pos in range(0, len(df), chunksize):
             tmp_filename = os.path.join(folder,
@@ -422,6 +423,7 @@ def generate_parquet_file(df, folder):
             fp.write(tmp_filename, df.iloc[pos:pos+chunksize,:],
                      compression='SNAPPY', write_index=False, times='int96')
     else:
+        print('starting to write textreaderfile to disk')
         suffix = 0
         #chunk_counter = 0
         # this try / except block functions as safeguard against columns that
