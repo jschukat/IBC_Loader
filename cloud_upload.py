@@ -274,19 +274,36 @@ def import_file(file, folder) :
         # add UnicodeDecodeError open(file, mode='r', encoding=enc, errors='replace') as f:
         try:
             print('start reading csv file')
-            df = pd.read_csv(file,
-                             low_memory=False,
-                             encoding=enc,
-                             sep=delimiter,
-                             error_bad_lines=False,
-                             parse_dates=True,
-                             warn_bad_lines=True,
-                             quotechar=quotechar,
-                             skip_blank_lines=True,
-                             escapechar=escapechar,
-                             thousands=thousand,
-                             decimal=dec,
-                             )
+            if cl.as_string:
+                df = pd.read_csv(file,
+                                 low_memory=True,
+                                 encoding=enc,
+                                 sep=delimiter,
+                                 error_bad_lines=False,
+                                 parse_dates=False,
+                                 warn_bad_lines=True,
+                                 quotechar=quotechar,
+                                 skip_blank_lines=True,
+                                 escapechar=escapechar,
+                                 thousands=thousand,
+                                 decimal=dec,
+                                 dtype=str,
+                                 chunksize=200000,
+                                 )
+            else:
+                df = pd.read_csv(file,
+                                 low_memory=False,
+                                 encoding=enc,
+                                 sep=delimiter,
+                                 error_bad_lines=False,
+                                 parse_dates=True,
+                                 warn_bad_lines=True,
+                                 quotechar=quotechar,
+                                 skip_blank_lines=True,
+                                 escapechar=escapechar,
+                                 thousands=thousand,
+                                 decimal=dec,
+                                 )
             print('csv file successfully imported')
         except MemoryError:
             print('ran out of memory, will retry with all columns of type string')
