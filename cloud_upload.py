@@ -326,19 +326,19 @@ def import_file(file, folder) :
             print('csv file successfully imported')
         except UnicodeDecodeError:
             print('decode failed, trying to use utf-8 instead.')
-                df = pd.read_csv(file,
-                                 low_memory=False,
-                                 encoding='utf-8',
-                                 sep=delimiter,
-                                 error_bad_lines=False,
-                                 parse_dates=True,
-                                 warn_bad_lines=True,
-                                 quotechar=quotechar,
-                                 skip_blank_lines=True,
-                                 escapechar=escapechar,
-                                 thousands=thousand,
-                                 decimal=dec,
-                                 )
+            df = pd.read_csv(file,
+                             low_memory=False,
+                             encoding='utf-8',
+                             sep=delimiter,
+                             error_bad_lines=False,
+                             parse_dates=True,
+                             warn_bad_lines=True,
+                             quotechar=quotechar,
+                             skip_blank_lines=True,
+                             escapechar=escapechar,
+                             thousands=thousand,
+                             decimal=dec,
+                             )
         except Exception as f:
             print(f)
             try:
