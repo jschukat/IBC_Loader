@@ -18,12 +18,13 @@ try:
     #import gzip
     import pandas as pd
     import csv
+    import logging
     from chardet.universaldetector import UniversalDetector
     from collections import defaultdict
     from pyxlsb import open_workbook as open_xlsb
 except ModuleNotFoundError as e:
-    print(e)
-    print('please install missing packages to use this program.')
+    logging.error(e)
+    logging.error('please install missing packages to use this program.')
     print('shutting down')
     quit()
 
@@ -60,11 +61,12 @@ def sort_abap(path):
     for file in t1:
         splt = os.path.basename(file).split('.')
         if len(splt) > 2:
-            print(f'found file to rename: {file}')
+            logging.warning(f'found file to rename: {file}')
             if splt[-2] == 'csv':
                 newname = '.'.join([os.path.dirname(file), '_'.join(splt[:-2]), splt[-2], splt[-1]])
             else:
                 newname = '.'.join([os.path.dirname(file), '_'.join(splt[:-1]), splt[-1]])
+            logging.warning(f'renaming file to: {newname}')
             os.rename(file, newname)
     t1 = glob.glob(os.path.join(path,'*'))
     # =========================================================================
@@ -74,7 +76,7 @@ def sort_abap(path):
     for i in range(len(t1)):
         t1[i] = os.path.split(t1[i])[1]
         header_name = re.findall('(.*)_HEADER_[0-9]{8}_[0-9]{6}.', t1[i])
-        print(t1[i], header_name)
+        logging.info(t1[i], header_name)
         if header_name:
             headers.append(header_name[0])
     headers = set(headers)
@@ -150,7 +152,7 @@ class cloud:
                  if isfile(join(dir_path, f))]
         parquet_files = list(filter(lambda f: f.endswith(".parquet"), files))
         for parquet_file in parquet_files:
-            print("Uploading chunk {}".format(parquet_file))
+            logging.info("Uploading chunk {}".format(parquet_file))
             self.push_new_chunk(pool_id, job_id, parquet_file)
 
     def push_new_chunk(self, pool_id, job_id, file_path):
@@ -174,7 +176,7 @@ def detect_encoding(file):
         if detector.done: break
     detector.close()
     enc = detector.result['encoding'].lower()
-    print('encoding:', enc,'\n')
+    logging.info('encoding:', enc,'\n')
     """
     if enc == 'ascii':
         enc = 'utf-8'
@@ -215,7 +217,7 @@ def determine_dialect(file, enc):
         escapechar = dialect.escapechar
         header = sniffer.has_header(data_str)
     except:
-        print('sniffer was unsuccessful, using a simplistic approach to determine the delimiter and existence of header.')
+        logging.warning('sniffer was unsuccessful, using a simplistic approach to determine the delimiter and existence of header.')
         line1 = data[0]
         delim = dict()
         for i in [';', ',', '\t', '|']:
@@ -227,7 +229,7 @@ def determine_dialect(file, enc):
             header = False
         else:
             header = True
-    print('delimiter:', delimiter, ' quotechar:', quotechar,
+    logging.info('delimiter:', delimiter, ' quotechar:', quotechar,
           ' escapechar:', escapechar, ' header:', header)
     return {'delimiter':delimiter, 'quotechar':quotechar,
             'escapechar':escapechar, 'header':header}
@@ -260,7 +262,7 @@ def import_file(file, folder) :
     # determine delimiter of csv file
     # assumes normal encoding of the file
     df = None
-    print(ending(file))
+    logging.debug(ending(file))
     if ending(file) == 'csv':
         # determine encoding and dialect
         enc = detect_encoding(file)
@@ -275,7 +277,7 @@ def import_file(file, folder) :
         # TODO: make it have 3 tries and just change variables as exception
         # add UnicodeDecodeError open(file, mode='r', encoding=enc, errors='replace') as f:
         try:
-            print('start reading csv file')
+            logging.info('start reading csv file')
             if cl.as_string:
                 df = pd.read_csv(file,
                                  low_memory=True,
@@ -306,9 +308,9 @@ def import_file(file, folder) :
                                  thousands=thousand,
                                  decimal=dec,
                                  )
-            print('csv file successfully imported')
+            logging.info('csv file successfully imported')
         except MemoryError:
-            print('ran out of memory, will retry with all columns of type string')
+            logging.error('ran out of memory, will retry with all columns of type string')
             df = pd.read_csv(file,
                              low_memory=True,
                              encoding=enc,
@@ -323,9 +325,9 @@ def import_file(file, folder) :
                              decimal=dec,
                              dtype=str,
                              )
-            print('csv file successfully imported')
+            logging.info('csv file successfully imported')
         except UnicodeDecodeError:
-            print('decode failed, trying to use utf-8 instead.')
+            logging.error('decode failed, trying to use utf-8 instead.')
             df = pd.read_csv(file,
                              low_memory=False,
                              encoding='utf-8',
@@ -340,9 +342,9 @@ def import_file(file, folder) :
                              decimal=dec,
                              )
         except Exception as f:
-            print(f)
+            logging.error(f)
             try:
-                print('error handling mode')
+                logging.warning('error handling mode')
                 time.sleep(1)
                 df = pd.read_csv(file, low_memory=False, encoding=enc,
                                  sep=delimiter, error_bad_lines=False, parse_dates=True,
@@ -357,7 +359,7 @@ def import_file(file, folder) :
                                  escapechar=escapechar, chunksize=200, skip_blank_lines=True,
                                  dtype=col_types, thousands=thousand, decimal=dec)
             except Exception as e:
-                print('errorhandling failed, unable to read file:', file,
+                logging.error('errorhandling failed, unable to read file:', file,
                       '\nerror is', e)
     elif ending(file) == 'xlsb':
         try:
@@ -368,17 +370,17 @@ def import_file(file, folder) :
                         df_lst.append([item.v for item in row])
             df = pd.DataFrame(df_lst[1:], columns=df_lst[0])
         except ModuleNotFoundError as e:
-            print(e)
-            print('please install missing packages to use this program.')
+            logging.error(e)
+            logging.warning('please install missing packages to use this program.')
             print('shutting down')
             quit()
         except Exception as e:
-            print('unable to read', file, 'with the following error:', e)
+            logging.error('unable to read', file, 'with the following error:', e)
     else:
         try:
             df = pd.read_excel(file)
         except Exception as e:
-            print('unable to read', file, 'with the following error:', e)
+            logging.error('unable to read', file, 'with the following error:', e)
     if type(df) is pd.DataFrame and cl.as_string:
         return df.astype(str)
     else:
@@ -412,7 +414,7 @@ def create_folders(files, path):
 def create_folder(path, name):
         fldr = os.path.join(path, name)
         if not os.path.exists(fldr):
-            print('create:', fldr)
+            logging.info('create:', fldr)
             os.makedirs(fldr)
         return fldr
 
@@ -431,16 +433,16 @@ def generate_parquet_file(df, folder):
     """
     file = os.path.split(folder)[1]
     if type(df) is pd.DataFrame:
-        print('starting to write dataframe to disk')
+        logging.info('starting to write dataframe to disk')
         chunksize = 200000
         for pos in range(0, len(df), chunksize):
             tmp_filename = os.path.join(folder,
                                         ''.join([file, str(pos), '.parquet']))
-            print('writing chunk', tmp_filename, 'to disk')
+            logging.info('writing chunk', tmp_filename, 'to disk')
             fp.write(tmp_filename, df.iloc[pos:pos+chunksize,:],
                      compression='SNAPPY', write_index=False, times='int96')
     else:
-        print('starting to write textreaderfile to disk')
+        logging.info('starting to write textreaderfile to disk')
         suffix = 0
         #chunk_counter = 0
         # this try / except block functions as safeguard against columns that
@@ -452,12 +454,12 @@ def generate_parquet_file(df, folder):
                 tmp_filename = os.path.join(folder,
                                             ''.join([file, str(suffix), '.parquet']))
                 fp.write(tmp_filename, i, compression='SNAPPY', write_index=False, times='int96')
-                print('writing chunk', tmp_filename, 'to disk')
+                logging.info('writing chunk', tmp_filename, 'to disk')
                 suffix += 1
                 #df2 = df2.append(i)
         except Exception as e:
             #chunk_counter += 1
-            print(e)
+            logging.error(e)
         """
         if chunk_counter > 0:
             print(str(chunk_counter), 'chunks were lost.')
@@ -481,7 +483,7 @@ def generate_parquet_file(df, folder):
 #null_cols = defaultdict(list)
 """
 logname = ''.join([datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S'), '_uploader.log'])
-
+logging.basicConfig(format='%(asctime)s %(message)s', filename=logname, level=logging.INFO)
 dir_path = os.path.normpath(cl.outputdir)
 transformationdir_general = os.path.normpath(cl.inputdir)
 if cl.transformation == 1:
@@ -535,21 +537,21 @@ if cl.transformation == 1:
                     shutil.move(i, done)
                 compression = 'NONE'
             else:
-                print('wrong file format in folder:', current_working_folder)
+                logging.error('wrong file format in folder:', current_working_folder)
                 continue
             cmdlist = ('java -Xmx', availablememory,
                        'm -jar ', jar, ' convert "',
                        current_working_folder, '" "', dir_path, '" ', compression)
 
             transforamtioncmd = ''.join(cmdlist)
-            print('starting transforamtion with the following command:\n',
+            logging.info('starting transforamtion with the following command:\n',
                   transforamtioncmd)
 
             with subprocess.Popen(transforamtioncmd, stdout=subprocess.PIPE,
                                   stderr=subprocess.STDOUT) as proc:
                 while proc.poll() is None:
                     data = str(proc.stdout.readline(), 'utf-8')
-                    print(data)
+                    logging.debug(data)
                     with open(sample_name, 'a') as tmp_output:
                         tmp_output.write(data)
 
@@ -565,26 +567,26 @@ if cl.transformation == 1:
                     error_log.write('Transformation errors:\n')
                     for errors in error_logs:
                         error_log.write(errors)
-                print('transforamtion finished, with errors. Logs have been written\
+                logging.error('transforamtion finished, with errors. Logs have been written\
                       to',logname)
             else:
-                print('transforamtion finished.')
+                logging.info('transforamtion finished.')
         os.remove(sample_name)
 
 
     files = files_left(transformationdir_general)
-    print('non abap files about to be transformed:',files)
+    logging.info('non abap files about to be transformed:',files)
 
     folders = create_folders(files, dir_path)
-    print('\ncreate_folder completed\n')
+    logging.info('\ncreate_folder completed\n')
 
     for file in files:
-        print('start loop for:', file)
+        logging.info('start loop for:', file)
         file_df = import_file(file, folders[file])
         try:
             generate_parquet_file(file_df, folders[file])
         except:
-            print(file, 'couldn\'t be transformed to parquet')
+            logging.error(file, 'couldn\'t be transformed to parquet')
         print('\n')
 
 
@@ -604,8 +606,8 @@ if cl.upload == 1:
         except AttributeError:
             connectionflag = 0
     except AttributeError:
-        print('this is an unvalid url.')
-    print(connectionflag)
+        logging.error('this is an unvalid url.')
+    logging.info(connectionflag)
 
     tenant = parts[0]
     cluster = parts[1]
@@ -623,13 +625,13 @@ if cl.upload == 1:
         delta = False
     jobstatus = {}
     dirs = [join(dir_path, f) for f in listdir(dir_path) if os.path.isdir(join(dir_path, f))]
-    print('Dirs to be uploaded:\n',dirs)
+    logging.info('Dirs to be uploaded:\n',dirs)
     uppie = cloud(tenant=tenant, realm=cluster, api_key=apikey)
     for dr in dirs :
         if dr == '__pycache__':
             continue
         # TODO: replace split \\ with os.path.split(file)[1])
-        print('\nuploading:', os.path.split(dr)[-1])
+        logging.info('\nuploading:', os.path.split(dr)[-1])
         jobhandle = uppie.create_job(pool_id=poolid,
                                      data_connection_id=connectionid,
                                      targetName=os.path.split(dr)[-1],
@@ -637,7 +639,7 @@ if cl.upload == 1:
         jobstatus[jobhandle['id']] = False
         uppie.push_new_dir(pool_id=poolid, job_id=jobhandle['id'], dir_path=dr)
         uppie.submit_job(pool_id=poolid, job_id=jobhandle['id'])
-    print('''upload done, waiting for jobs to be finished\nyou\'ll get a status\
+    logging.debug('''upload done, waiting for jobs to be finished\nyou\'ll get a status\
 update every 15 seconds. Logs will be written to:''', logname)
     running = True
     with open(logname, 'a') as fh:
@@ -649,27 +651,27 @@ update every 15 seconds. Logs will be written to:''', logname)
                     try:
                         if i['id'] == jobids:
                             if i['status'] == 'QUEUED':
-                                print('job for',i['targetName'],'queued')
+                                logging.debug('job for',i['targetName'],'queued')
                             elif jobstatus[jobids] == True:
                                 pass
                             elif i['status'] == 'DONE':
                                 jobstatus[jobids] = True
                                 printout = ' '.join([i['targetName'],'was successfully installed in the database'])
-                                print(printout)
+                                logging.info(printout)
                                 fh.write(''.join([printout,'\n']))
                             elif i['status'] != 'RUNNING':
                                 jobstatus[jobids] = True
-                                print(i)
+                                logging.error(i)
                                 fh.write(''.join([str(i),'\n']))
                             else:
                                 print('job for', i['targetName'], 'still running')
                             break
                     except (KeyboardInterrupt, SystemExit):
-                        print('terminating program\n')
+                        logging.error('terminating program\n')
                         break
                     except:
                         pass
             if all(status == True for status in jobstatus.values()):
                 running = False
             time.sleep(15)
-print('all done')
+logging.info('all done')
