@@ -278,7 +278,7 @@ def import_file(file, folder) :
         # TODO: make it have 3 tries and just change variables as exception
         # add UnicodeDecodeError open(file, mode='r', encoding=enc, errors='replace') as f:
         try:
-            logging.info('start reading csv file')
+            logging.info(f'start reading {file}')
             if cl.as_string:
                 df = pd.read_csv(file,
                                  low_memory=True,
