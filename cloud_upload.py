@@ -28,6 +28,8 @@ except ModuleNotFoundError as e:
     print('shutting down')
     quit()
 
+logname = ''.join([datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S'), '_uploader.log'])
+logging.basicConfig(format='%(asctime)s %(message)s', filename=logname, level=logging.INFO)
 
 # =============================================================================
 # returns all files for a path that are csv or Excel
@@ -76,7 +78,7 @@ def sort_abap(path):
     for i in range(len(t1)):
         t1[i] = os.path.split(t1[i])[1]
         header_name = re.findall('(.*)_HEADER_[0-9]{8}_[0-9]{6}.', t1[i])
-        logging.info(t1[i], header_name)
+        logging.info(f'{t1[i]} {header_name}')
         if header_name:
             headers.append(header_name[0])
     headers = set(headers)
@@ -152,7 +154,7 @@ class cloud:
                  if isfile(join(dir_path, f))]
         parquet_files = list(filter(lambda f: f.endswith(".parquet"), files))
         for parquet_file in parquet_files:
-            logging.info("Uploading chunk {}".format(parquet_file))
+            logging.info(f"Uploading chunk {parquet_file}")
             self.push_new_chunk(pool_id, job_id, parquet_file)
 
     def push_new_chunk(self, pool_id, job_id, file_path):
@@ -176,7 +178,7 @@ def detect_encoding(file):
         if detector.done: break
     detector.close()
     enc = detector.result['encoding'].lower()
-    logging.info('encoding:', enc,'\n')
+    logging.info(f'encoding: {enc}')
     """
     if enc == 'ascii':
         enc = 'utf-8'
@@ -229,8 +231,7 @@ def determine_dialect(file, enc):
             header = False
         else:
             header = True
-    logging.info('delimiter:', delimiter, ' quotechar:', quotechar,
-          ' escapechar:', escapechar, ' header:', header)
+    logging.info(f'delimiter: {delimiter}, quotechar: {quotechar}, escapechar: {escapechar}, header: {header}')
     return {'delimiter':delimiter, 'quotechar':quotechar,
             'escapechar':escapechar, 'header':header}
 
@@ -262,7 +263,7 @@ def import_file(file, folder) :
     # determine delimiter of csv file
     # assumes normal encoding of the file
     df = None
-    logging.debug(ending(file))
+    logging.debug(f'{ending(file)}')
     if ending(file) == 'csv':
         # determine encoding and dialect
         enc = detect_encoding(file)
@@ -359,8 +360,7 @@ def import_file(file, folder) :
                                  escapechar=escapechar, chunksize=200, skip_blank_lines=True,
                                  dtype=col_types, thousands=thousand, decimal=dec)
             except Exception as e:
-                logging.error('errorhandling failed, unable to read file:', file,
-                      '\nerror is', e)
+                logging.error(f'errorhandling failed, unable to read file: {file}\nerror is {e}')
     elif ending(file) == 'xlsb':
         try:
             df_lst = []
@@ -375,12 +375,12 @@ def import_file(file, folder) :
             print('shutting down')
             quit()
         except Exception as e:
-            logging.error('unable to read', file, 'with the following error:', e)
+            logging.error(f'unable to read {file} with the following error: {e}')
     else:
         try:
             df = pd.read_excel(file)
         except Exception as e:
-            logging.error('unable to read', file, 'with the following error:', e)
+            logging.error(f'unable to read {file} with the following error: {e}')
     if type(df) is pd.DataFrame and cl.as_string:
         return df.astype(str)
     else:
@@ -414,7 +414,7 @@ def create_folders(files, path):
 def create_folder(path, name):
         fldr = os.path.join(path, name)
         if not os.path.exists(fldr):
-            logging.info('create:', fldr)
+            logging.info(f'create: {fldr}')
             os.makedirs(fldr)
         return fldr
 
@@ -438,7 +438,7 @@ def generate_parquet_file(df, folder):
         for pos in range(0, len(df), chunksize):
             tmp_filename = os.path.join(folder,
                                         ''.join([file, str(pos), '.parquet']))
-            logging.info('writing chunk', tmp_filename, 'to disk')
+            logging.info(f'writing chunk {tmp_filename} to disk')
             fp.write(tmp_filename, df.iloc[pos:pos+chunksize,:],
                      compression='SNAPPY', write_index=False, times='int96')
     else:
@@ -454,7 +454,7 @@ def generate_parquet_file(df, folder):
                 tmp_filename = os.path.join(folder,
                                             ''.join([file, str(suffix), '.parquet']))
                 fp.write(tmp_filename, i, compression='SNAPPY', write_index=False, times='int96')
-                logging.info('writing chunk', tmp_filename, 'to disk')
+                logging.info(f'writing chunk {tmp_filename} to disk')
                 suffix += 1
                 #df2 = df2.append(i)
         except Exception as e:
@@ -482,8 +482,7 @@ def generate_parquet_file(df, folder):
 #global null_cols
 #null_cols = defaultdict(list)
 """
-logname = ''.join([datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S'), '_uploader.log'])
-logging.basicConfig(format='%(asctime)s %(message)s', filename=logname, level=logging.INFO)
+
 dir_path = os.path.normpath(cl.outputdir)
 transformationdir_general = os.path.normpath(cl.inputdir)
 if cl.transformation == 1:
@@ -537,15 +536,14 @@ if cl.transformation == 1:
                     shutil.move(i, done)
                 compression = 'NONE'
             else:
-                logging.error('wrong file format in folder:', current_working_folder)
+                logging.error(f'wrong file format in folder: {current_working_folder}')
                 continue
             cmdlist = ('java -Xmx', availablememory,
                        'm -jar ', jar, ' convert "',
                        current_working_folder, '" "', dir_path, '" ', compression)
 
             transforamtioncmd = ''.join(cmdlist)
-            logging.info('starting transforamtion with the following command:\n',
-                  transforamtioncmd)
+            logging.info(f'starting transforamtion with the following command:\n{transforamtioncmd})
 
             with subprocess.Popen(transforamtioncmd, stdout=subprocess.PIPE,
                                   stderr=subprocess.STDOUT) as proc:
@@ -567,26 +565,26 @@ if cl.transformation == 1:
                     error_log.write('Transformation errors:\n')
                     for errors in error_logs:
                         error_log.write(errors)
-                logging.error('transforamtion finished, with errors. Logs have been written\
-                      to',logname)
+                logging.error(f'transforamtion finished, with errors. Logs have been written\
+                      to {logname}')
             else:
                 logging.info('transforamtion finished.')
         os.remove(sample_name)
 
 
     files = files_left(transformationdir_general)
-    logging.info('non abap files about to be transformed:',files)
+    logging.info(f'non abap files about to be transformed: {files}')
 
     folders = create_folders(files, dir_path)
     logging.info('\ncreate_folder completed\n')
 
     for file in files:
-        logging.info('start loop for:', file)
+        logging.info(f'start loop for: {file}')
         file_df = import_file(file, folders[file])
         try:
             generate_parquet_file(file_df, folders[file])
         except:
-            logging.error(file, 'couldn\'t be transformed to parquet')
+            logging.error(f'{file} couldn\'t be transformed to parquet')
         print('\n')
 
 
@@ -606,7 +604,7 @@ if cl.upload == 1:
         except AttributeError:
             connectionflag = 0
     except AttributeError:
-        logging.error('this is an unvalid url.')
+        logging.error(f'{url} this is an unvalid url.')
     logging.info(connectionflag)
 
     tenant = parts[0]
@@ -625,13 +623,13 @@ if cl.upload == 1:
         delta = False
     jobstatus = {}
     dirs = [join(dir_path, f) for f in listdir(dir_path) if os.path.isdir(join(dir_path, f))]
-    logging.info('Dirs to be uploaded:\n',dirs)
+    logging.info(f'Dirs to be uploaded:\n{dirs}')
     uppie = cloud(tenant=tenant, realm=cluster, api_key=apikey)
     for dr in dirs :
         if dr == '__pycache__':
             continue
         # TODO: replace split \\ with os.path.split(file)[1])
-        logging.info('\nuploading:', os.path.split(dr)[-1])
+        logging.info(f'\nuploading: {os.path.split(dr)[-1]}')
         jobhandle = uppie.create_job(pool_id=poolid,
                                      data_connection_id=connectionid,
                                      targetName=os.path.split(dr)[-1],
@@ -639,39 +637,36 @@ if cl.upload == 1:
         jobstatus[jobhandle['id']] = False
         uppie.push_new_dir(pool_id=poolid, job_id=jobhandle['id'], dir_path=dr)
         uppie.submit_job(pool_id=poolid, job_id=jobhandle['id'])
-    logging.debug('''upload done, waiting for jobs to be finished\nyou\'ll get a status\
-update every 15 seconds. Logs will be written to:''', logname)
+    logging.debug(f'''upload done, waiting for jobs to be finished\nyou\'ll get a status\
+update every 15 seconds. Logs will be written to: {logname}''')
     running = True
-    with open(logname, 'a') as fh:
-        fh.write('\n\nUpload log:\n')
-        while running:
-            jobs = uppie.list_jobs(poolid)
-            for jobids in jobstatus:
-                for i in jobs:
-                    try:
-                        if i['id'] == jobids:
-                            if i['status'] == 'QUEUED':
-                                logging.debug('job for',i['targetName'],'queued')
-                            elif jobstatus[jobids] == True:
-                                pass
-                            elif i['status'] == 'DONE':
-                                jobstatus[jobids] = True
-                                printout = ' '.join([i['targetName'],'was successfully installed in the database'])
-                                logging.info(printout)
-                                fh.write(''.join([printout,'\n']))
-                            elif i['status'] != 'RUNNING':
-                                jobstatus[jobids] = True
-                                logging.error(i)
-                                fh.write(''.join([str(i),'\n']))
-                            else:
-                                print('job for', i['targetName'], 'still running')
-                            break
-                    except (KeyboardInterrupt, SystemExit):
-                        logging.error('terminating program\n')
+    logging.info('\n\nUpload log:\n')
+    while running:
+        jobs = uppie.list_jobs(poolid)
+        for jobids in jobstatus:
+            for i in jobs:
+                try:
+                    if i['id'] == jobids:
+                        if i['status'] == 'QUEUED':
+                            logging.debug(f'job for {i["targetName"]} queued')
+                        elif jobstatus[jobids] == True:
+                            pass
+                        elif i['status'] == 'DONE':
+                            jobstatus[jobids] = True
+                            printout = ' '.join([i['targetName'],'was successfully installed in the database'])
+                            logging.info(printout)
+                        elif i['status'] != 'RUNNING':
+                            jobstatus[jobids] = True
+                            logging.error(str(i))
+                        else:
+                            print('job for', i['targetName'], 'still running')
                         break
-                    except:
-                        pass
-            if all(status == True for status in jobstatus.values()):
-                running = False
-            time.sleep(15)
+                except (KeyboardInterrupt, SystemExit):
+                    logging.error('terminating program\n')
+                    break
+                except:
+                    pass
+        if all(status == True for status in jobstatus.values()):
+            running = False
+        time.sleep(15)
 logging.info('all done')
