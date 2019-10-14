@@ -543,7 +543,7 @@ if cl.transformation == 1:
                        current_working_folder, '" "', dir_path, '" ', compression)
 
             transforamtioncmd = ''.join(cmdlist)
-            logging.info(f'starting transforamtion with the following command:\n{transforamtioncmd})
+            logging.info(f'starting transforamtion with the following command:\n{transforamtioncmd}')
 
             with subprocess.Popen(transforamtioncmd, stdout=subprocess.PIPE,
                                   stderr=subprocess.STDOUT) as proc:
