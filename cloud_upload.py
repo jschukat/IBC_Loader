@@ -294,6 +294,7 @@ def import_file(file, folder) :
                                  decimal=dec,
                                  dtype=str,
                                  chunksize=200000,
+                                 engine='python',
                                  )
             else:
                 df = pd.read_csv(file,
@@ -308,6 +309,7 @@ def import_file(file, folder) :
                                  escapechar=escapechar,
                                  thousands=thousand,
                                  decimal=dec,
+                                 engine='python',
                                  )
             logging.info('csv file successfully imported')
         except MemoryError:
@@ -325,6 +327,7 @@ def import_file(file, folder) :
                              thousands=thousand,
                              decimal=dec,
                              dtype=str,
+                             engine='python',
                              )
             logging.info('csv file successfully imported')
         except UnicodeDecodeError:
@@ -341,6 +344,7 @@ def import_file(file, folder) :
                              escapechar=escapechar,
                              thousands=thousand,
                              decimal=dec,
+                             engine='python',
                              )
         except Exception as f:
             logging.error(f)
@@ -449,17 +453,17 @@ def generate_parquet_file(df, folder):
         # have been cast partially wrong and thereby corrupt the whole dataframe
         # TODO: Make this part recursive, so that it creates a new df which is a sum of all the
         #df2 = []
-        try:
-            for i in df:
+        for i in df:
+            try:
                 tmp_filename = os.path.join(folder,
                                             ''.join([file, str(suffix), '.parquet']))
                 fp.write(tmp_filename, i, compression='SNAPPY', write_index=False, times='int96')
                 logging.info(f'writing chunk {tmp_filename} to disk')
                 suffix += 1
                 #df2 = df2.append(i)
-        except Exception as e:
-            #chunk_counter += 1
-            logging.error(e)
+            except Exception as e:
+                #chunk_counter += 1
+                logging.error(e)
         """
         if chunk_counter > 0:
             print(str(chunk_counter), 'chunks were lost.')
