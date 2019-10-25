@@ -169,21 +169,18 @@ class cloud:
 def detect_encoding(file):
     detector = UniversalDetector()
     detector.reset()
+    try:
+        with open(file, 'rb') as file_detect:
+            lines_to_analyze = file_detect.readlines(50000)
 
-    with open(file, 'rb') as file_detect:
-        lines_to_analyze = file_detect.readlines(50000)
-
-    for line in lines_to_analyze:
-        detector.feed(line)
-        if detector.done: break
-    detector.close()
-    enc = detector.result['encoding'].lower()
-    logging.info(f'encoding: {enc}')
-    """
-    if enc == 'ascii':
+        for line in lines_to_analyze:
+            detector.feed(line)
+            if detector.done: break
+        detector.close()
+        enc = detector.result['encoding'].lower()
+        logging.info(f'encoding: {enc}')
+    except:
         enc = 'utf-8'
-        print('determined encoding to be ascii, using utf-8 nonetheless as this has been less prone to errors in the past.')
-    """
     return enc
 
 def test_float(x):
