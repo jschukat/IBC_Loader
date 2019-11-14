@@ -1,3 +1,20 @@
+import logging
+import datetime
+import sys
+
+logname = ''.join([datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S'), '_uploader.log'])
+FORMAT = '%(asctime)s %(levelname)s %(message)s'
+logging.basicConfig(format=FORMAT, filename=logname, level=logging.INFO)
+
+root = logging.getLogger()
+root.setLevel(logging.INFO)
+
+handler = logging.StreamHandler(sys.stdout)
+handler.setLevel(logging.INFO)
+formatter = logging.Formatter(FORMAT)
+handler.setFormatter(formatter)
+root.addHandler(handler)
+
 try:
     import requests
     from os import listdir
@@ -7,7 +24,6 @@ try:
     import psutil
     import re
     import time
-    import datetime
     import subprocess
     import numpy
     import glob
@@ -15,10 +31,8 @@ try:
     import shutil
     import fastparquet as fp
     import snappy
-    #import gzip
     import pandas as pd
     import csv
-    import logging
     from chardet.universaldetector import UniversalDetector
     from collections import defaultdict
     from pyxlsb import open_workbook as open_xlsb
@@ -27,9 +41,6 @@ except ModuleNotFoundError as e:
     logging.error('please install missing packages to use this program.')
     print('shutting down')
     quit()
-
-logname = ''.join([datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S'), '_uploader.log'])
-logging.basicConfig(format='%(asctime)s %(message)s', filename=logname, level=logging.INFO)
 
 # =============================================================================
 # returns all files for a path that are csv or Excel
