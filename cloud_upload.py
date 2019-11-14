@@ -165,7 +165,7 @@ class cloud:
                  if isfile(join(dir_path, f))]
         parquet_files = list(filter(lambda f: f.endswith(".parquet"), files))
         for parquet_file in parquet_files:
-            logging.info(f"Uploading chunk {parquet_file}")
+            logging.debug(f"Uploading chunk {parquet_file}")
             self.push_new_chunk(pool_id, job_id, parquet_file)
 
     def push_new_chunk(self, pool_id, job_id, file_path):
@@ -319,7 +319,7 @@ def import_file(file, folder) :
                                  decimal=dec,
                                  engine='python',
                                  )
-            logging.info('csv file successfully imported')
+                logging.info('csv file successfully imported')
         except MemoryError:
             logging.error('ran out of memory, will retry with all columns of type string')
             df = pd.read_csv(file,
@@ -450,7 +450,7 @@ def generate_parquet_file(df, folder):
         for pos in range(0, len(df), chunksize):
             tmp_filename = os.path.join(folder,
                                         ''.join([file, str(pos), '.parquet']))
-            logging.info(f'writing chunk {tmp_filename} to disk')
+            logging.debug(f'writing chunk {tmp_filename} to disk')
             fp.write(tmp_filename, df.iloc[pos:pos+chunksize,:],
                      compression='SNAPPY', write_index=False, times='int96')
     else:
@@ -466,7 +466,7 @@ def generate_parquet_file(df, folder):
                 tmp_filename = os.path.join(folder,
                                             ''.join([file, str(suffix), '.parquet']))
                 fp.write(tmp_filename, i, compression='SNAPPY', write_index=False, times='int96')
-                logging.info(f'writing chunk {tmp_filename} to disk')
+                logging.debug(f'writing chunk {tmp_filename} to disk')
                 suffix += 1
                 #df2 = df2.append(i)
             except Exception as e:
