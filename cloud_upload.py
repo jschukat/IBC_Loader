@@ -470,8 +470,9 @@ def generate_parquet_file(df, folder):
                 suffix += 1
                 #df2 = df2.append(i)
             except Exception as e:
+                logging.exception(f'Got exception {e} while trying to generate the parquet file.')
+                raise
                 #chunk_counter += 1
-                logging.error(e)
         """
         if chunk_counter > 0:
             print(str(chunk_counter), 'chunks were lost.')
@@ -611,7 +612,7 @@ if cl.upload == 1:
         parts.append(re.search('\.([a-z0-9-]+)\.celonis', url).groups()[0])
         parts.append(re.search('ui/pools/([a-z0-9-]+)', url).groups()[0])
         try:
-            parts.append(re.search('data-connections/[a-z]+/([a-z0-9-]+)', url)
+            parts.append(re.search('data-connections/[a-z-]+/([a-z0-9-]+)', url)
                          .groups()[0])
         except AttributeError:
             connectionflag = 0
