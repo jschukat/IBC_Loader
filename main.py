@@ -6,7 +6,16 @@ import subprocess
 import cloud_upload_config as ctc
 
 # ********** Install dependencies ********** #
-if not ctc.agreed:
+try:
+    if not ctc.agreed:
+        with open('disclaimer.md', 'r') as disc:
+            print(disc.read())
+        agree = input('\n\nDo you agree with these terms of use? (y/N)')
+        if agree == 'y' or agree == 'Y':
+            agree = True
+        else:
+            quit()
+except AttributeError:
     with open('disclaimer.md', 'r') as disc:
         print(disc.read())
     agree = input('\n\nDo you agree with these terms of use? (y/N)')
@@ -14,6 +23,9 @@ if not ctc.agreed:
         agree = True
     else:
         quit()
+except Exception as e:
+    raise
+
 # ********** Install dependencies ********** #
 print('installing dependencies')
 flag = os.system('pip --version')
