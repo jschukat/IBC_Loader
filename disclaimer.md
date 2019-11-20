@@ -1,3 +1,7 @@
+
+
+
+
 Non-Release Tools - Terms of Use
 The following Non-Release Tools - Terms of Use (the "Terms") govern your registration, right to use and access to certain non-released software tools relating to the Celonis Software (the "Tools") which are  offered by Celonis SE, Theresienstrasse 6, 80333 Munich, Germany ("Celonis" or "we"). By clicking the "I accept" button you (both as an individual and as an authorized representative on behalf of the legal entity you are employed by) agree that you have read these Terms and agree to be legally bound by them.
 

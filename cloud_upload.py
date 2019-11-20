@@ -279,6 +279,8 @@ def import_file(file, folder) :
         delimiter = dialect['delimiter']
         quotechar = dialect['quotechar']
         escapechar = dialect['escapechar']
+        if escapechar is None:
+            escapechar = '\\'
         number_format = determine_number_format(file, enc, delimiter)
         thousand = number_format['thousands']
         dec = number_format['decimal']
@@ -451,8 +453,12 @@ def generate_parquet_file(df, folder):
             tmp_filename = os.path.join(folder,
                                         ''.join([file, str(pos), '.parquet']))
             logging.debug(f'writing chunk {tmp_filename} to disk')
-            fp.write(tmp_filename, df.iloc[pos:pos+chunksize,:],
-                     compression='SNAPPY', write_index=False, times='int96')
+            try:
+                fp.write(tmp_filename, df.iloc[pos:pos+chunksize,:],
+                         compression='SNAPPY', write_index=False, times='int96')
+            except Exception as e:
+                logging.exception(f'Got exception {e} while trying to generate the parquet file.')
+                raise
     else:
         logging.info('starting to write textreaderfile to disk')
         suffix = 0
@@ -594,10 +600,7 @@ if cl.transformation == 1:
     for file in files:
         logging.info(f'start loop for: {file}')
         file_df = import_file(file, folders[file])
-        try:
-            generate_parquet_file(file_df, folders[file])
-        except:
-            logging.error(f'{file} couldn\'t be transformed to parquet')
+        generate_parquet_file(file_df, folders[file])
         print('\n')
 
 
