@@ -5,7 +5,16 @@ import subprocess
 # TODO: make module import failsafe
 import cloud_upload_config as ctc
 
+# ********** Install dependencies ********** #
+if not ctc.agreed:
+    with open('disclaimer.md', 'r') as disc:
+        print(disc.read())
 
+agree = input('\n\nDo you agree with these terms of use? (y/N)')
+if agree == 'y' or agree == 'Y':
+    agree = True
+else:
+    quit()
 # ********** Install dependencies ********** #
 print('installing dependencies')
 flag = os.system('pip --version')
@@ -115,6 +124,7 @@ def runlolarun():
     #     co = ''
     out = textoutput.get()#.encode('ansi').decode('utf-8')
     inp = textinput.get()#.encode('ansi').decode('utf-8')
+    ag = agree
     print(out, inp)
     with open('cloud_upload_config.py', 'w+') as conffile:
         conffile.write("""# Example: url of cloud team: https://demo.eu-1.celonis.cloud/
@@ -130,7 +140,8 @@ inputdir = '{}'
 transformation = {}
 upload = {}
 delta = {}
-as_string = {}\n""".format(ur, ap, out, inp, tr, up, de, st))
+as_string = {}
+agreed = {}\n""".format(ur, ap, out, inp, tr, up, de, st, ag))
     print('saved to config.')
     cmd = ''.join(['python.exe "', os.path.join(os.getcwd(),
                    'cloud_upload.py'), '"'])

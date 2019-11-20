@@ -12,3 +12,4 @@ transformation = 1
 upload = 1
 delta = 0
 as_string = 1
+agreed = False
