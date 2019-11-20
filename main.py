@@ -9,12 +9,11 @@ import cloud_upload_config as ctc
 if not ctc.agreed:
     with open('disclaimer.md', 'r') as disc:
         print(disc.read())
-
-agree = input('\n\nDo you agree with these terms of use? (y/N)')
-if agree == 'y' or agree == 'Y':
-    agree = True
-else:
-    quit()
+    agree = input('\n\nDo you agree with these terms of use? (y/N)')
+    if agree == 'y' or agree == 'Y':
+        agree = True
+    else:
+        quit()
 # ********** Install dependencies ********** #
 print('installing dependencies')
 flag = os.system('pip --version')
