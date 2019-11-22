@@ -15,6 +15,8 @@ try:
             agree = True
         else:
             quit()
+    else:
+        agree = True
 except AttributeError:
     with open('disclaimer.md', 'r') as disc:
         print(disc.read())
