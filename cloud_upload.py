@@ -96,7 +96,7 @@ def sort_abap(path):
                 newname = '.'.join([os.path.dirname(file), '_'.join(splt[:-2]), splt[-2], splt[-1]])
             else:
                 newname = '.'.join([os.path.dirname(file), '_'.join(splt[:-1]), splt[-1]])
-            logging.warning(f'renaming file to: {newname}')
+            logging.warning(f'renaming {file} to: {newname}')
             os.rename(file, newname)
     t1 = glob.glob(os.path.join(path,'*'))
     # =========================================================================
@@ -436,7 +436,10 @@ def create_folders(files, path):
     return_dict = {}
     allowed = set('0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_-')
     for file in files:
-        file_without_ending = remove_ending(os.path.split(file)[1]).replace(' ', '_').replace('.', '_')
+        if '.gz.csv' in file:
+            file_without_ending = file.replace('.gz.csv', '').replace(' ', '_').replace('.', '_')
+        else:
+            file_without_ending = remove_ending(os.path.split(file)[1]).replace(' ', '_').replace('.', '_')
         folder_name = ''.join(filter(lambda x: x in allowed,
                                      file_without_ending))
         return_dict[file] = create_folder(path, folder_name)
@@ -448,7 +451,6 @@ def create_folder(path, name):
             logging.info(f'create: {fldr}')
             os.makedirs(fldr)
         return fldr
-
 
 def generate_parquet_file(df, folder):
     """
@@ -463,45 +465,42 @@ def generate_parquet_file(df, folder):
     None
     """
     file = os.path.split(folder)[1]
-    if type(df) is pd.DataFrame:
-        logging.info('starting to write dataframe to disk')
-        chunksize = 200000
-        for pos in range(0, len(df), chunksize):
-            tmp_filename = os.path.join(folder,
-                                        ''.join([file, str(pos), '.parquet']))
-            logging.debug(f'writing chunk {tmp_filename} to disk')
-            try:
-                fp.write(tmp_filename, df.iloc[pos:pos+chunksize,:],
-                         compression='SNAPPY', write_index=False, times='int96')
-            except Exception as e:
-                logging.exception(f'Got exception {e} while trying to generate the parquet file.')
-                raise
-    else:
-        logging.info('starting to write textreaderfile to disk')
-        suffix = 0
-        #chunk_counter = 0
-        # this try / except block functions as safeguard against columns that
-        # have been cast partially wrong and thereby corrupt the whole dataframe
-        # TODO: Make this part recursive, so that it creates a new df which is a sum of all the
-        #df2 = []
-        for i in df:
-            try:
+    try:
+        if type(df) is pd.DataFrame:
+            logging.info('starting to write dataframe to disk')
+            chunksize = 200000
+            for pos in range(0, len(df), chunksize):
                 tmp_filename = os.path.join(folder,
-                                            ''.join([file, str(suffix), '.parquet']))
-                fp.write(tmp_filename, i, compression='SNAPPY', write_index=False, times='int96')
+                                            ''.join([file, str(pos), '.parquet']))
                 logging.debug(f'writing chunk {tmp_filename} to disk')
-                suffix += 1
-                #df2 = df2.append(i)
-            except Exception as e:
-                logging.exception(f'Got exception {e} while trying to generate the parquet file.')
-                raise
-                #chunk_counter += 1
-        """
-        if chunk_counter > 0:
-            print(str(chunk_counter), 'chunks were lost.')
-        df_concat = pd.concat(df2, ignore_index=True)
-        generate_parquet_file(df_concat, folder)
-        """
+                try:
+                    fp.write(tmp_filename, df.iloc[pos:pos+chunksize,:],
+                             compression='SNAPPY', write_index=False, times='int96')
+                except Exception as e:
+                    logging.exception(f'Got exception {e} while trying to generate the parquet file.')
+                    raise
+        else:
+            logging.info('starting to write textreaderfile to disk')
+            suffix = 0
+            #chunk_counter = 0
+            # this try / except block functions as safeguard against columns that
+            # have been cast partially wrong and thereby corrupt the whole dataframe
+            # TODO: Make this part recursive, so that it creates a new df which is a sum of all the
+            #df2 = []
+            for i in df:
+                try:
+                    tmp_filename = os.path.join(folder,
+                                                ''.join([file, str(suffix), '.parquet']))
+                    fp.write(tmp_filename, i, compression='SNAPPY', write_index=False, times='int96')
+                    logging.debug(f'writing chunk {tmp_filename} to disk')
+                    suffix += 1
+                    #df2 = df2.append(i)
+                except Exception as e:
+                    logging.exception(f'Got exception {e} while trying to generate the parquet file.')
+                    raise
+                    #chunk_counter += 1
+    except Exception as e:
+        logging.exception(f'Got exception "{e}" while executing function generate_parquet_file.')
 # =============================================================================
 #                 ___  ___       ___   _   __   _        _____   _   _   __   _   _____   _____   _   _____   __   _
 #                /   |/   |     /   | | | |  \ | |      |  ___| | | | | |  \ | | /  ___| |_   _| | | /  _  \ |  \ | |
@@ -512,12 +511,6 @@ def generate_parquet_file(df, folder):
 #
 # =============================================================================
 
-# Probably not needed anymore
-"""
-#vertica_commands_file = ''.join([datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S'),'_vertica_commands_file.sql'])
-#global null_cols
-#null_cols = defaultdict(list)
-"""
 
 dir_path = os.path.normpath(cl.outputdir)
 transformationdir_general = os.path.normpath(cl.inputdir)
@@ -667,6 +660,7 @@ if cl.upload == 1:
                                      data_connection_id=connectionid,
                                      targetName=os.path.split(dr)[-1],
                                      upsert=delta)
+        logging.debug(f'jobhandle : {jobhandle}')
         jobstatus[jobhandle['id']] = False
         uppie.push_new_dir(pool_id=poolid, job_id=jobhandle['id'], dir_path=dr)
         uppie.submit_job(pool_id=poolid, job_id=jobhandle['id'])

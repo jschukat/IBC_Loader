@@ -3,7 +3,20 @@ from tkinter import *
 import os
 import subprocess
 # TODO: make module import failsafe
-import cloud_upload_config as ctc
+try:
+    import cloud_upload_config as ctc
+except:
+    class ctc():
+        pass
+    ctc.url = 'Open connection settings or data pool (whichever applies) and paste the whole url in here'
+    ctc.apikey = 'create api key in the cloud team under "My Account" at the very bottom'
+    ctc.outputdir = ''
+    ctc.inputdir = ''
+    ctc.transformation = 1
+    ctc.upload = 1
+    ctc.delta = 0
+    ctc.as_string = 1
+    ctc.agreed = False
 
 # ********** Install dependencies ********** #
 try:
