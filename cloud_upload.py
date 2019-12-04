@@ -317,8 +317,6 @@ def import_file(file, folder) :
                                  quotechar=quotechar,
                                  skip_blank_lines=True,
                                  escapechar=escapechar,
-                                 thousands=thousand,
-                                 decimal=dec,
                                  dtype=str,
                                  chunksize=200000,
                                  engine='python',
@@ -351,8 +349,6 @@ def import_file(file, folder) :
                              quotechar=quotechar,
                              skip_blank_lines=True,
                              escapechar=escapechar,
-                             thousands=thousand,
-                             decimal=dec,
                              dtype=str,
                              engine='python',
                              )
