@@ -567,10 +567,10 @@ if cl.transformation == 1:
                        'm -jar ', jar, ' convert "',
                        current_working_folder, '" "', dir_path, '" ', compression)
 
-            transforamtioncmd = ''.join(cmdlist)
-            logging.info(f'starting transforamtion with the following command:\n{transforamtioncmd}')
+            transformationcmd = ''.join(cmdlist)
+            logging.info(f'starting transformation with the following command:\n{transformationcmd}')
 
-            with subprocess.Popen(transforamtioncmd, stdout=subprocess.PIPE,
+            with subprocess.Popen(transformationcmd, stdout=subprocess.PIPE,
                                   stderr=subprocess.STDOUT) as proc:
                 while proc.poll() is None:
                     data = str(proc.stdout.readline(), 'utf-8')
