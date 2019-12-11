@@ -197,16 +197,19 @@ class cloud:
 def detect_encoding(file):
     detector = UniversalDetector()
     detector.reset()
+    counter = 0
     try:
         with open(file, 'rb') as file_detect:
-            lines_to_analyze = file_detect.readlines(50000)
-
-        for line in lines_to_analyze:
-            detector.feed(line)
-            if detector.done: break
+            for line in file_detect:
+                counter += 1
+                detector.feed(line)
+                if detector.done:
+                    break
+                elif counter > 1000000:
+                    break
         detector.close()
         enc = detector.result['encoding'].lower()
-        logging.info(f'encoding: {enc}')
+        logging.info(f'encoding: {detector.result}')
     except:
         enc = 'utf-8'
     return enc
@@ -306,7 +309,7 @@ def import_file(file, folder) :
         # add UnicodeDecodeError open(file, mode='r', encoding=enc, errors='replace') as f:
         try:
             logging.info(f'start reading {file}')
-            if cl.as_string:
+            if cl.as_string and quotechar is not None:
                 df = pd.read_csv(file,
                                  low_memory=True,
                                  encoding=enc,
@@ -315,6 +318,20 @@ def import_file(file, folder) :
                                  parse_dates=False,
                                  warn_bad_lines=True,
                                  quotechar=quotechar,
+                                 skip_blank_lines=True,
+                                 escapechar=escapechar,
+                                 dtype=str,
+                                 chunksize=200000,
+                                 engine='python',
+                                 )
+            elif cl.as_string:
+                df = pd.read_csv(file,
+                                 low_memory=True,
+                                 encoding=enc,
+                                 sep=delimiter,
+                                 error_bad_lines=False,
+                                 parse_dates=False,
+                                 warn_bad_lines=True,
                                  skip_blank_lines=True,
                                  escapechar=escapechar,
                                  dtype=str,
