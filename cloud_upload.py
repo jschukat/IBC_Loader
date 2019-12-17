@@ -425,6 +425,12 @@ def import_file(file, folder) :
             df = pd.read_excel(file)
         except Exception as e:
             logging.error(f'unable to read {file} with the following error: {e}')
+    col_new = []
+    for col in df.columns:
+        for i in [' ', '.', ',', ';', ':']:
+            col = col.replace(i, '_')
+        col_new.append(col)
+    df.columns = col_new
     if type(df) is pd.DataFrame and cl.as_string:
         return df.astype(str)
     else:
