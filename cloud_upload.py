@@ -329,6 +329,8 @@ def import_file(file, folder) :
                         pd_config['dtype'] = str
                     if quotechar is not None and len(quotechar) > 0:
                         pd_config['quotechar'] = quotechar
+                    else:
+                        pd_config['quoting'] = 3
                     logging.info(f'start reading {file}')
                     df = pd.read_csv(**pd_config)
                     logging.info('csv file successfully imported')
@@ -404,8 +406,8 @@ def create_folders(files, path):
     return_dict = {}
     allowed = set('0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_-')
     for file in files:
-        if '.gz.csv' in file:
-            file_without_ending = file.replace('.gz.csv', '').replace(' ', '_').replace('.', '_')
+        if '.csv.gz' in file:
+            file_without_ending = file.replace('.csv.gz', '').replace(' ', '_').replace('.', '_')
         else:
             file_without_ending = remove_ending(os.path.split(file)[1]).replace(' ', '_').replace('.', '_')
         folder_name = ''.join(filter(lambda x: x in allowed,
