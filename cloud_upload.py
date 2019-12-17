@@ -294,7 +294,7 @@ def import_file(file, folder) :
     logging.debug(f'{ending(file)}')
     if ending(file) == 'csv':
         # determine encoding and dialect
-        enc = detect_encoding(file)
+        encoding = detect_encoding(file)
         dialect = determine_dialect(file, enc)
         delimiter = dialect['delimiter']
         quotechar = dialect['quotechar']
@@ -307,104 +307,45 @@ def import_file(file, folder) :
 
         # TODO: make it have 3 tries and just change variables as exception
         # add UnicodeDecodeError open(file, mode='r', encoding=enc, errors='replace') as f:
-        try:
-            logging.info(f'start reading {file}')
-            if cl.as_string and quotechar is not None:
-                df = pd.read_csv(file,
-                                 low_memory=True,
-                                 encoding=enc,
-                                 sep=delimiter,
-                                 error_bad_lines=False,
-                                 parse_dates=False,
-                                 warn_bad_lines=True,
-                                 quotechar=quotechar,
-                                 skip_blank_lines=True,
-                                 escapechar=escapechar,
-                                 dtype=str,
-                                 chunksize=200000,
-                                 engine='python',
-                                 )
-            elif cl.as_string:
-                df = pd.read_csv(file,
-                                 low_memory=True,
-                                 encoding=enc,
-                                 sep=delimiter,
-                                 error_bad_lines=False,
-                                 parse_dates=False,
-                                 warn_bad_lines=True,
-                                 skip_blank_lines=True,
-                                 escapechar=escapechar,
-                                 dtype=str,
-                                 chunksize=200000,
-                                 engine='python',
-                                 )
-            else:
-                df = pd.read_csv(file,
-                                 low_memory=False,
-                                 encoding=enc,
-                                 sep=delimiter,
-                                 error_bad_lines=False,
-                                 parse_dates=True,
-                                 warn_bad_lines=True,
-                                 quotechar=quotechar,
-                                 skip_blank_lines=True,
-                                 escapechar=escapechar,
-                                 thousands=thousand,
-                                 decimal=dec,
-                                 engine='python',
-                                 )
-                logging.info('csv file successfully imported')
-        except MemoryError:
-            logging.error('ran out of memory, will retry with all columns of type string')
-            df = pd.read_csv(file,
-                             low_memory=True,
-                             encoding=enc,
-                             sep=delimiter,
-                             error_bad_lines=False,
-                             parse_dates=True,
-                             warn_bad_lines=True,
-                             quotechar=quotechar,
-                             skip_blank_lines=True,
-                             escapechar=escapechar,
-                             dtype=str,
-                             engine='python',
-                             )
-            logging.info('csv file successfully imported')
-        except UnicodeDecodeError:
-            logging.error('decode failed, trying to use utf-8 instead.')
-            df = pd.read_csv(file,
-                             low_memory=False,
-                             encoding='utf-8',
-                             sep=delimiter,
-                             error_bad_lines=False,
-                             parse_dates=True,
-                             warn_bad_lines=True,
-                             quotechar=quotechar,
-                             skip_blank_lines=True,
-                             escapechar=escapechar,
-                             thousands=thousand,
-                             decimal=dec,
-                             engine='python',
-                             )
-        except Exception as f:
-            logging.error(f)
+        for enc in [encoding, 'utf-8', 'ascii', 'cp1252', 'latin_1', 'iso-8859-1']:
             try:
-                logging.warning('error handling mode')
-                time.sleep(1)
-                df = pd.read_csv(file, low_memory=False, encoding=enc,
-                                 sep=delimiter, error_bad_lines=False, parse_dates=True,
-                                 warn_bad_lines=True, quotechar=quotechar, skip_blank_lines=True,
-                                 escapechar=escapechar, nrows=200000, thousands=thousand, decimal=dec)
-                col_types = dict()
-                for i in range(len(df.dtypes)):
-                    col_types[i] = df.dtypes[i]
-                time.sleep(1)
-                df = pd.read_csv(file, encoding=enc, sep=delimiter, error_bad_lines=False,
-                                 parse_dates=True, warn_bad_lines=True, quotechar=quotechar,
-                                 escapechar=escapechar, chunksize=200, skip_blank_lines=True,
-                                 dtype=col_types, thousands=thousand, decimal=dec)
-            except Exception as e:
-                logging.error(f'errorhandling failed, unable to read file: {file}\nerror is {e}')
+                try:
+                    pd_config = {
+                                'filepath_or_buffer':file,
+                                'encoding':enc,
+                                'sep':delimiter,
+                                'error_bad_lines':False,
+                                'parse_dates':False,
+                                'warn_bad_lines':True,
+                                'skip_blank_lines':True,
+                                'escapechar':escapechar,
+                                'chunksize':200000,
+                                'engine':'python',
+                                }
+                    if cl.as_string:
+                        pd_config['low_memory'] = True
+                        pd_config['dtype'] = str
+                    if quotechar is not None and len(quotechar) > 0:
+                        pd_config['quotechar'] = quotechar
+                    logging.info(f'start reading {file}')
+                    df = pd.read_csv(**pd_config)
+                    logging.info('csv file successfully imported')
+                except MemoryError:
+                    logging.error('ran out of memory, will retry with all columns of type string')
+                    pd_config['low_memory'] = True
+                    pd_config['dtype'] = str
+                    df = pd.read_csv(**pd_config)
+                    logging.info('csv file successfully imported')
+                except UnicodeDecodeError:
+                    logging.error('decode failed, trying to use utf-8 instead.')
+                    pd_config['encoding'] = 'utf-8'
+                    df = pd.read_csv(**pd_config)
+                except Exception as f:
+                    logging.exception(f'errorhandling failed, unable to read file: {file}\nerror is {f}')
+                generate_parquet_file(df, folder)
+                return None
+            except:
+                pass
     elif ending(file) == 'xlsb':
         try:
             df_lst = []
@@ -432,9 +373,9 @@ def import_file(file, folder) :
         col_new.append(col)
     df.columns = col_new
     if type(df) is pd.DataFrame and cl.as_string:
-        return df.astype(str)
-    else:
-        return df
+        df = df.astype(str)
+    generate_parquet_file(df, folder)
+    return None
 
 def remove_ending(files):
     if isinstance(files, (str,)):
@@ -629,7 +570,7 @@ if cl.transformation == 1:
     for file in files:
         logging.info(f'start loop for: {file}')
         file_df = import_file(file, folders[file])
-        generate_parquet_file(file_df, folders[file])
+        #generate_parquet_file(file_df, folders[file])
         print('\n')
 
 
