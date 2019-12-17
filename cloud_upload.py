@@ -195,6 +195,7 @@ class cloud:
         return requests.post(api, headers=self.get_auth())
 
 def detect_encoding(file):
+    logging.info(f'starting encoding determination')
     detector = UniversalDetector()
     detector.reset()
     counter = 0
@@ -205,7 +206,7 @@ def detect_encoding(file):
                 detector.feed(line)
                 if detector.done:
                     break
-                elif counter > 1000000:
+                elif counter > 100000:
                     break
         detector.close()
         enc = detector.result['encoding'].lower()
@@ -295,13 +296,13 @@ def import_file(file, folder) :
     if ending(file) == 'csv':
         # determine encoding and dialect
         encoding = detect_encoding(file)
-        dialect = determine_dialect(file, enc)
+        dialect = determine_dialect(file, encoding)
         delimiter = dialect['delimiter']
         quotechar = dialect['quotechar']
         escapechar = dialect['escapechar']
         if escapechar is None:
             escapechar = '\\'
-        number_format = determine_number_format(file, enc, delimiter)
+        number_format = determine_number_format(file, encoding, delimiter)
         thousand = number_format['thousands']
         dec = number_format['decimal']
 
