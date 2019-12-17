@@ -308,6 +308,7 @@ def import_file(file, folder) :
         # TODO: make it have 3 tries and just change variables as exception
         # add UnicodeDecodeError open(file, mode='r', encoding=enc, errors='replace') as f:
         for enc in [encoding, 'utf-8', 'ascii', 'cp1252', 'latin_1', 'iso-8859-1']:
+            logging.info(f'trying to import file using encoding: {enc}')
             try:
                 try:
                     pd_config = {
