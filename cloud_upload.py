@@ -346,12 +346,13 @@ def import_file(file, folder) :
                     df = pd.read_csv(**pd_config)
                 except Exception as f:
                     logging.exception(f'errorhandling failed, unable to read file: {file}\nerror is {f}')
+                if type(df) is pd.DataFrame:
                 col_new = []
-                for col in df.columns:
-                    for i in [' ', '.', ',', ';', ':']:
-                        col = col.replace(i, '_')
-                    col_new.append(col)
-                df.columns = col_new
+                    for col in df.columns:
+                        for i in [' ', '.', ',', ';', ':']:
+                            col = col.replace(i, '_')
+                        col_new.append(col)
+                    df.columns = col_new
                 generate_parquet_file(df, folder)
                 return None
             except:
