@@ -347,11 +347,7 @@ def import_file(file, folder) :
                 except Exception as f:
                     logging.exception(f'errorhandling failed, unable to read file: {file}\nerror is {f}')
                 if type(df) is pd.DataFrame:
-<<<<<<< HEAD
                     col_new = []
-=======
-                col_new = []
->>>>>>> 06f1221535c8216e45adc1498175ca218e9f9ca2
                     for col in df.columns:
                         for i in [' ', '.', ',', ';', ':']:
                             col = col.replace(i, '_')
