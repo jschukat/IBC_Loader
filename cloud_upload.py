@@ -1,3 +1,22 @@
+
+# TODO: integrate _csv.Error Null bytes
+"""
+counter = 0
+buffer = []
+with open(r'C:\Users\Administrator\Downloads\Dat\tasks.csv', 'rb') as inp:
+    with open(r'C:\Users\Administrator\Downloads\Dat\tasks_out.csv', 'wb') as out:
+        for line in inp:
+            buffer.append(line.replace(b'\0', b''))
+            counter += 1
+            if counter > 50000:
+                print('writing buffer to file\n')
+                text = b'\n'.join(buffer)
+                filehandler.write(text)
+                counter = 0
+                buffer = []
+"""
+
+
 import logging
 import datetime
 import sys
@@ -93,9 +112,9 @@ def sort_abap(path):
         if len(splt) > 2:
             logging.warning(f'found file to rename: {file}')
             if splt[-2] == 'csv':
-                newname = '.'.join([os.path.dirname(file), '_'.join(splt[:-2]), splt[-2], splt[-1]])
+                newname = os.path.join(os.path.dirname(file), '.'.join(['_'.join(splt[:-2]), splt[-2], splt[-1]]))
             else:
-                newname = '.'.join([os.path.dirname(file), '_'.join(splt[:-1]), splt[-1]])
+                newname = os.path.join(os.path.dirname(file), '.'.join(['_'.join(splt[:-1]), splt[-1]]))
             logging.warning(f'renaming {file} to: {newname}')
             os.rename(file, newname)
     t1 = glob.glob(os.path.join(path,'*'))
