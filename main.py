@@ -78,7 +78,7 @@ defaultPoolid = 'Event Collection -> select data pool -> in url copy string betw
 global defaultConnectionid
 defaultConnectionid = 'Event Collection -> open config of data connection -> in url copy string between /data-connections/.../ and /edit'
 global inputdir
-inputdir = 'This should be the directory, where the unzipped ABAP and or other csv / excel files are stored.'
+inputdir = 'This should be the directory, where the ABAP (unzipped, gzip, 7z) and or other csv / excel files are stored.'
 global outputdir
 outputdir = 'This should be an empty directory, where the parquet files can be placed in.'
 global defaultUrl
