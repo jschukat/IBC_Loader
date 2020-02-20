@@ -16,7 +16,6 @@ with open(r'C:\Users\Administrator\Downloads\Dat\tasks.csv', 'rb') as inp:
                 buffer = []
 """
 
-
 import logging
 import datetime
 import sys
