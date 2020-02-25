@@ -356,7 +356,8 @@ def import_file(file, folder) :
                             col = col.replace(i, '_')
                         col_new.append(col)
                     df.columns = col_new
-                generate_parquet_file(df, folder)
+                if generate_parquet_file(df, folder) == 1:
+                    raise
                 return None
             except:
                 pass
@@ -473,8 +474,10 @@ def generate_parquet_file(df, folder):
                     logging.exception(f'Got exception {e} while trying to generate the parquet file.')
                     raise
                     #chunk_counter += 1
+        return 0
     except Exception as e:
         logging.exception(f'Got exception "{e}" while executing function generate_parquet_file.')
+        return 1
 # =============================================================================
 #                 ___  ___       ___   _   __   _        _____   _   _   __   _   _____   _____   _   _____   __   _
 #                /   |/   |     /   | | | |  \ | |      |  ___| | | | | |  \ | | /  ___| |_   _| | | /  _  \ |  \ | |
