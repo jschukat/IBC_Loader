@@ -357,7 +357,7 @@ def import_file(file, folder) :
                         col_new.append(col)
                     df.columns = col_new
                 generate_parquet_file(df, folder)
-                return None
+                break
             except:
                 pass
     elif ending(file) == 'xlsb':
