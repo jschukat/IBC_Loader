@@ -313,6 +313,7 @@ def import_file(file, folder) :
         # add UnicodeDecodeError open(file, mode='r', encoding=enc, errors='replace') as f:
         for enc in [encoding, 'utf-8', 'ascii', 'cp1252', 'latin_1', 'iso-8859-1']:
             logging.info(f'trying to import file using encoding: {enc}')
+            encoding = enc
             try:
                 try:
                     pd_config = {
@@ -356,8 +357,12 @@ def import_file(file, folder) :
                             col = col.replace(i, '_')
                         col_new.append(col)
                     df.columns = col_new
-                if generate_parquet_file(df, folder) == 1:
-                    raise
+                generation_result = generate_parquet_file(df, folder)
+                if generation_result == 2:
+                    logging.info('trying to cope with the file in a different way')
+                    import_file(fix_csv_file(file, folder, encoding, quotechar))
+                else:
+                    raise Exception('Parquet generation failed with unknown error and returned {generation_result}, trying again with different encoding.')
                 return None
             except:
                 pass
@@ -391,6 +396,51 @@ def import_file(file, folder) :
         df = df.astype(str)
     generate_parquet_file(df, folder)
     return None
+
+def fix_csv_file(file, folder, enc, quotechar):
+    counter = 0
+    number = -1
+    result = []
+    first_line = None
+    with open(file, mode='r', encoding=enc, errors='replace') as inp:
+        for line in inp:
+            nmbr = len(re.findall(quotechar, line))
+            break
+    if nmbr > 0:
+        number = nmbr
+
+    counter = 0
+    buffer = None
+    new_file = file.replace('.csv', '_new.csv')
+    with open(new_file, 'w') as out:
+        with open(file, mode='r', encoding=enc, errors='replace') as inp:
+            for line in inp:
+                if len(re.findall(quotechar, line)) == number and buffer is not None and len(re.findall(quotechar, buffer)) == number:
+                    result.append(line)
+                    result.append(buffer)
+                    buffer = None
+                elif len(re.findall(quotechar, line)) == number:
+                    result.append(line)
+                    buffer = None
+                elif len(re.findall(quotechar, line)) % 2 == 0 and buffer is not None and len(re.findall(quotechar, buffer)) % 2 == 0:
+                    result.append(line)
+                    result.append(buffer)
+                    buffer = None
+                elif len(re.findall(quotechar, line)) % 2 == 0:
+                    result.append(line)
+                    buffer = None
+                elif buffer is None:
+                    buffer = line
+                else:
+                    buffer += line
+                counter += 1
+                if counter > 200000:
+                    out.write('\n'.join(result))
+                    out.write('\n')
+                    result = []
+                    counter = 0
+    return new_file, folder
+
 
 def remove_ending(files):
     if isinstance(files, (str,)):
@@ -477,7 +527,10 @@ def generate_parquet_file(df, folder):
         return 0
     except Exception as e:
         logging.exception(f'Got exception "{e}" while executing function generate_parquet_file.')
-        return 1
+        if "_csv.Error: ';' expected after '\"'" in str(e):
+            return 2
+        else:
+            return 1
 # =============================================================================
 #                 ___  ___       ___   _   __   _        _____   _   _   __   _   _____   _____   _   _____   __   _
 #                /   |/   |     /   | | | |  \ | |      |  ___| | | | | |  \ | | /  ___| |_   _| | | /  _  \ |  \ | |
