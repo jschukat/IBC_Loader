@@ -398,48 +398,51 @@ def import_file(file, folder) :
     return None
 
 def fix_csv_file(file, folder, enc, quotechar):
-    counter = 0
-    number = -1
-    result = []
-    first_line = None
-    with open(file, mode='r', encoding=enc, errors='replace') as inp:
-        for line in inp:
-            nmbr = len(re.findall(quotechar, line))
-            break
-    if nmbr > 0:
-        number = nmbr
-
-    counter = 0
-    buffer = None
-    new_file = file.replace('.csv', '_new.csv')
-    with open(new_file, 'w') as out:
+    try:
+        counter = 0
+        number = -1
+        result = []
+        first_line = None
         with open(file, mode='r', encoding=enc, errors='replace') as inp:
             for line in inp:
-                if len(re.findall(quotechar, line)) == number and buffer is not None and len(re.findall(quotechar, buffer)) == number:
-                    result.append(line)
-                    result.append(buffer)
-                    buffer = None
-                elif len(re.findall(quotechar, line)) == number:
-                    result.append(line)
-                    buffer = None
-                elif len(re.findall(quotechar, line)) % 2 == 0 and buffer is not None and len(re.findall(quotechar, buffer)) % 2 == 0:
-                    result.append(line)
-                    result.append(buffer)
-                    buffer = None
-                elif len(re.findall(quotechar, line)) % 2 == 0:
-                    result.append(line)
-                    buffer = None
-                elif buffer is None:
-                    buffer = line
-                else:
-                    buffer += line
-                counter += 1
-                if counter > 200000:
-                    out.write('\n'.join(result))
-                    out.write('\n')
-                    result = []
-                    counter = 0
-    return new_file, folder
+                nmbr = len(re.findall(quotechar, line))
+                break
+        if nmbr > 0:
+            number = nmbr
+
+        counter = 0
+        buffer = None
+        new_file = file.replace('.csv', '_new.csv')
+        with open(new_file, 'w') as out:
+            with open(file, mode='r', encoding=enc, errors='replace') as inp:
+                for line in inp:
+                    if len(re.findall(quotechar, line)) == number and buffer is not None and len(re.findall(quotechar, buffer)) == number:
+                        result.append(line)
+                        result.append(buffer)
+                        buffer = None
+                    elif len(re.findall(quotechar, line)) == number:
+                        result.append(line)
+                        buffer = None
+                    elif len(re.findall(quotechar, line)) % 2 == 0 and buffer is not None and len(re.findall(quotechar, buffer)) % 2 == 0:
+                        result.append(line)
+                        result.append(buffer)
+                        buffer = None
+                    elif len(re.findall(quotechar, line)) % 2 == 0:
+                        result.append(line)
+                        buffer = None
+                    elif buffer is None:
+                        buffer = line
+                    else:
+                        buffer += line
+                    counter += 1
+                    if counter > 200000:
+                        out.write('\n'.join(result))
+                        out.write('\n')
+                        result = []
+                        counter = 0
+        return new_file, folder
+    except Exception as e:
+        logging.error(f'fixing csv failed with: {e}')
 
 
 def remove_ending(files):
@@ -527,7 +530,7 @@ def generate_parquet_file(df, folder):
         return 0
     except Exception as e:
         logging.exception(f'Got exception "{e}" while executing function generate_parquet_file.')
-        if "_csv.Error: ';' expected after '\"'" in str(e):
+        if "';' expected after '\"'" in str(e):
             return 2
         else:
             return 1
