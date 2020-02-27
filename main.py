@@ -177,8 +177,12 @@ delta = {}
 as_string = {}
 agreed = {}\n""".format(ur, ap, out, inp, tr, up, de, st, ag))
     print('saved to config.')
-    cmd = ''.join(['python.exe "', os.path.join(os.getcwd(),
-                   'cloud_upload.py'), '"'])
+    if sys.platform == 'win32':
+        cmd = ''.join(['python.exe "', os.path.join(os.getcwd(),
+                       'cloud_upload.py'), '"'])
+    else:
+        cmd = ''.join(['python "', os.path.join(os.getcwd(),
+                       'cloud_upload.py'), '"'])
     os.system(cmd)
     root.destroy()
 
