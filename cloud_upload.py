@@ -528,6 +528,7 @@ def generate_parquet_file(df, folder):
                     logging.exception(f'Got exception {e} while trying to generate the parquet file.')
                     raise
                     #chunk_counter += 1
+        logging.info('successfully written data to disk')
         return 0
     except Exception as e:
         logging.exception(f'Got exception "{e}" while executing function generate_parquet_file.')
