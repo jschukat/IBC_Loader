@@ -386,15 +386,6 @@ def import_file(file, folder) :
             df = pd.read_excel(file)
         except Exception as e:
             logging.error(f'unable to read {file} with the following error: {e}')
-    col_new = []
-    if type(df) is pd.DataFrame:
-        for col in df.columns:
-            for i in [' ', '.', ',', ';', ':']:
-                col = col.replace(i, '_')
-            col_new.append(col)
-        df.columns = col_new
-    if type(df) is pd.DataFrame and cl.as_string:
-        df = df.astype(str)
     generate_parquet_file(df, folder)
     return None
 
@@ -496,6 +487,14 @@ def generate_parquet_file(df, folder):
     file = os.path.split(folder)[1]
     try:
         if type(df) is pd.DataFrame:
+            col_new = []
+            for col in df.columns:
+                for i in [' ', '.', ',', ';', ':']:
+                    col = col.replace(i, '_')
+                col_new.append(col)
+            df.columns = col_new
+            if cl.as_string:
+                df = df.astype(str)
             logging.info('starting to write dataframe to disk')
             chunksize = 200000
             for pos in range(0, len(df), chunksize):
