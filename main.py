@@ -210,42 +210,6 @@ entryurl.bind('<FocusOut>', checkContent)
 entryurl.pack(fill=X, padx=10, pady=5)
 
 
-'''
-# *********** Tenant *********** #
-frametenant = Frame(root)
-frametenant.pack(fill=X)
-
-labeltenant = Label(frametenant, text='Tenant')
-labeltenant.pack(side=LEFT, padx=10, pady=5)
-texttenant = StringVar()
-entrytenant = Entry(frametenant, textvariable=texttenant, name='tenant')
-if ctc.tenant == '':
-    texttenant.set(defaultTenant)
-else:
-    texttenant.set(ctc.tenant)
-
-entrytenant.bind('<FocusIn>', rmText)
-entrytenant.bind('<FocusOut>', checkContent)
-entrytenant.pack(fill=X, padx=10, pady=5)
-
-
-# *********** Cluster *********** #
-framecluster = Frame(root)
-framecluster.pack(fill=X)
-
-labelcluster = Label(framecluster, text='Cluster')
-labelcluster.pack(side=LEFT, padx=10, pady=5)
-textcluster = StringVar()
-entrycluster = Entry(framecluster, textvariable=textcluster, name='cluster')
-if ctc.cluster == '':
-    textcluster.set(defaultCluster)
-else:
-    textcluster.set(ctc.cluster)
-entrycluster.bind('<FocusIn>', rmText)
-entrycluster.bind('<FocusOut>', checkContent)
-entrycluster.pack(fill=X, padx=10, pady=5)
-'''
-
 # *********** Api-Key *********** #
 frameapikey = Frame(root)
 frameapikey.pack(fill=X)
@@ -262,41 +226,6 @@ entryapikey.bind('<FocusIn>', rmText)
 entryapikey.bind('<FocusOut>', checkContent)
 entryapikey.pack(fill=X, padx=10, pady=5)
 
-'''
-# *********** Pool ID *********** #
-framepoolid = Frame(root)
-framepoolid.pack(fill=X)
-
-labelpoolid = Label(framepoolid, text='Pool ID')
-labelpoolid.pack(side=LEFT, padx=10, pady=5)
-textpoolid = StringVar()
-entrypoolid = Entry(framepoolid, textvariable=textpoolid, name='poolid')
-if ctc.poolid == '':
-    textpoolid.set(defaultPoolid)
-else:
-    textpoolid.set(ctc.poolid)
-entrypoolid.bind('<FocusIn>', rmText)
-entrypoolid.bind('<FocusOut>', checkContent)
-entrypoolid.pack(fill=X, padx=10, pady=5)
-
-
-# *********** Connection ID *********** #
-frameconnectionid = Frame(root)
-frameconnectionid.pack(fill=X)
-
-labelconnectionid = Label(frameconnectionid, text='Connection ID')
-labelconnectionid.pack(side=LEFT, padx=10, pady=5)
-textconnectionid = StringVar()
-entryconnectionid = Entry(frameconnectionid, textvariable=textconnectionid,
-                          name='connectionid')
-if ctc.connectionid == '':
-    textconnectionid.set(defaultConnectionid)
-else:
-    textconnectionid.set(ctc.connectionid)
-entryconnectionid.bind('<FocusIn>', rmText)
-entryconnectionid.bind('<FocusOut>', checkContent)
-entryconnectionid.pack(fill=X, padx=10, pady=5)
-'''
 
 # *********** Input Dir *********** #
 frameinput = Frame(root)
