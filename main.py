@@ -2,6 +2,7 @@ from tkinter import filedialog
 from tkinter import *
 import os
 import subprocess
+import sys
 # TODO: make module import failsafe
 try:
     import cloud_upload_config as ctc
@@ -59,13 +60,20 @@ for pkg in ['psutil', 'requests', 'pyxlsb']:
         cmd = ''.join(['pip install --user ', pkg])
         os.system(cmd)
 
-fast = os.popen('conda list').read()
-if not 'python-snappy' in fast or not 'fastparquet' in fast:
-    conda_check = subprocess.run(['where.exe', 'conda'])
-    if conda_check.returncode == 0:
-        print('installing fastparquet and snappy')
-        subprocess.run(['conda', 'install', 'fastparquet', '-y'])
-        subprocess.run(['conda', 'install', 'python-snappy', '-y'])
+if sys.platform == 'linux':
+    for pkg in ['python-snappy', 'fastparquet']:
+        if pkg not in pkgs:
+            print('\ninstalling', pkg)
+            cmd = ''.join(['pip install --user ', pkg])
+            os.system(cmd)
+else:
+    fast = os.popen('conda list').read()
+    if not 'python-snappy' in fast or not 'fastparquet' in fast:
+        conda_check = subprocess.run(['where.exe', 'conda'])
+        if conda_check.returncode == 0:
+            print('installing fastparquet and snappy')
+            subprocess.run(['conda', 'install', 'fastparquet', '-y'])
+            subprocess.run(['conda', 'install', 'python-snappy', '-y'])
 
 global defaultTenant
 defaultTenant = 'demo, if url is https://demo.eu-1.celonis.cloud/'

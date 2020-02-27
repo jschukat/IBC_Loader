@@ -360,7 +360,7 @@ def import_file(file, folder) :
                 generation_result = generate_parquet_file(df, folder)
                 if generation_result == 2:
                     logging.info('trying to cope with the file in a different way')
-                    import_file(fix_csv_file(file, folder, encoding, quotechar))
+                    return import_file(fix_csv_file(file, folder, encoding, quotechar))
                 else:
                     raise Exception('Parquet generation failed with unknown error and returned {generation_result}, trying again with different encoding.')
                 return None
