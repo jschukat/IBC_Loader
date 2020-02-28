@@ -360,7 +360,9 @@ def import_file(file, folder) :
                 generation_result = generate_parquet_file(df, folder)
                 if generation_result == 2:
                     logging.info(f'trying to cope with {file} in a different way. Encoding: {encoding}, Quotechar: {quotechar}')
-                    return import_file(fix_csv_file(file, folder, encoding, quotechar, delimiter))
+                    new_file, new_folder = fix_csv_file(file, folder, encoding, quotechar, delimiter)
+                    logging.info('finished fixing the csv and calling import?file with {new_file, new_folder}')
+                    import_file(new_file, new_folder)
                 elif generation_result != 0:
                     raise Exception('Parquet generation failed with unknown error and returned {generation_result}, trying again with different encoding.')
                 return None
@@ -397,6 +399,7 @@ def line_check(strng, sep, quote):
     return sep.join(srs)
 
 def fix_csv_file(file, folder, enc, quotechar, sep):
+    logging.info('starting to fix csv')
     try:
         counter = 0
         number = -1
@@ -412,7 +415,7 @@ def fix_csv_file(file, folder, enc, quotechar, sep):
         counter = 0
         buffer = None
         new_file = file.replace('.csv', '_new.csv')
-        with open(new_file, 'w') as out:
+        with open(new_file, 'w', errors='replace') as out:
             with open(file, mode='r', encoding=enc, errors='replace') as inp:
                 for line in inp:
                     if len(re.findall(quotechar, line)) == number and buffer is not None and len(re.findall(quotechar, buffer)) == number:
@@ -430,11 +433,12 @@ def fix_csv_file(file, folder, enc, quotechar, sep):
                         result.append(line_check(line, sep, quotechar))
                         buffer = None
                     elif buffer is None:
-                        buffer = line
+                        buffer = line.replace('\n', '')
                     else:
-                        buffer += line
+                        buffer += line.replace('\n', '')
                     counter += 1
-                    if counter > 200000:
+                    if counter > 100000:
+                        logging.info('writing chunk to disk')
                         out.write('\n'.join(result))
                         out.write('\n')
                         result = []
