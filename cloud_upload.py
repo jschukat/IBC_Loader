@@ -409,6 +409,7 @@ def fix_csv_file(file, folder, enc, quotechar, sep):
         with open(file, mode='r', encoding=enc, errors='replace') as inp:
             for line in inp:
                 nmbr = len(re.findall(quotechar, line))
+                logging.info(f'{nmbr} quotecharacters were found in the first line.')
                 break
         if nmbr > 0:
             number = nmbr
@@ -416,7 +417,7 @@ def fix_csv_file(file, folder, enc, quotechar, sep):
         counter = 0
         buffer = None
         new_file = file.replace('.csv', '_new.csv')
-        with open(new_file, 'w', encoding=enc, errors='replace') as out:
+        with open(new_file, mode='w', encoding=enc, errors='replace') as out:
             with open(file, mode='r', encoding=enc, errors='replace') as inp:
                 for line in inp:
                     if len(re.findall(quotechar, line)) == number and buffer is not None and len(re.findall(quotechar, buffer)) == number:
@@ -434,9 +435,9 @@ def fix_csv_file(file, folder, enc, quotechar, sep):
                         result.append(line_check(line, sep, quotechar))
                         buffer = None
                     elif buffer is None:
-                        buffer = line.replace('\n', '')
+                        buffer = line
                     else:
-                        buffer += line.replace('\n', '')
+                        buffer = ' '.join([buffer, line])
                     counter += 1
                     if counter > 200000:
                         logging.info('writing chunk to disk')
@@ -444,6 +445,7 @@ def fix_csv_file(file, folder, enc, quotechar, sep):
                         out.write('\n')
                         result = []
                         counter = 0
+                        logging.info('chunk has been written to disk')
         return new_file, folder
     except Exception as e:
         logging.error(f'fixing csv failed with: {e}')
