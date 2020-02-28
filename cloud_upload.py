@@ -490,6 +490,7 @@ def create_folder(path, name):
         if os.path.exists(fldr):
             logging.info(f'remove existing folder: {fldr}')
             shutil.rmtree(fldr)
+        time.sleep(1)
         logging.info(f'create: {fldr}')
         os.makedirs(fldr)
         return fldr
