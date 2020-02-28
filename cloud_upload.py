@@ -487,9 +487,11 @@ def create_folders(files, path):
 
 def create_folder(path, name):
         fldr = os.path.join(path, name)
-        if not os.path.exists(fldr):
-            logging.info(f'create: {fldr}')
-            os.makedirs(fldr)
+        if os.path.exists(fldr):
+            logging.info(f'remove existing folder: {fldr}')
+            shutil.rmtree(fldr)
+        logging.info(f'create: {fldr}')
+        os.makedirs(fldr)
         return fldr
 
 def generate_parquet_file(df, folder):
@@ -519,7 +521,7 @@ def generate_parquet_file(df, folder):
             chunksize = 200000
             for pos in range(0, len(df), chunksize):
                 tmp_filename = os.path.join(folder,
-                                            ''.join([file, str(pos), '.parquet']))
+                                            ''.join([file, str(pos), datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S'), '.parquet']))
                 logging.debug(f'writing chunk {tmp_filename} to disk')
                 try:
                     fp.write(tmp_filename, df.iloc[pos:pos+chunksize,:],
@@ -538,7 +540,7 @@ def generate_parquet_file(df, folder):
             for i in df:
                 try:
                     tmp_filename = os.path.join(folder,
-                                                ''.join([file, str(suffix), '.parquet']))
+                                                ''.join([file, str(suffix), datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S'), '.parquet']))
                     fp.write(tmp_filename, i, compression='SNAPPY', write_index=False, times='int96')
                     logging.debug(f'writing chunk {tmp_filename} to disk')
                     suffix += 1
