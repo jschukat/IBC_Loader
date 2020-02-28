@@ -360,9 +360,10 @@ def import_file(file, folder) :
                 generation_result = generate_parquet_file(df, folder)
                 if generation_result == 2:
                     logging.info(f'trying to cope with {file} in a different way. Encoding: {encoding}, Quotechar: {quotechar}')
-                    new_file, new_folder = fix_csv_file(file, folder, encoding, quotechar, delimiter)
-                    logging.info('finished fixing the csv and calling import?file with {new_file, new_folder}')
-                    import_file(new_file, new_folder)
+                    if fix_csv_file(file, folder, encoding, quotechar, delimiter) == 0:
+                        logging.info(f'successfully fixed {file}')
+                    else:
+                        logging.error(f'{file} couldn\'t be fixed')
                 elif generation_result != 0:
                     raise Exception('Parquet generation failed with unknown error and returned {generation_result}, trying again with different encoding.')
                 return None
@@ -391,12 +392,14 @@ def import_file(file, folder) :
     generate_parquet_file(df, folder)
     return None
 
-def line_check(strng, sep, quote):
+def line_check(strng, sep, quote, seps):
     srs = pd.Series(strng.split(sep))
+    if len(srs) != seps:
+        return None
     #srs = srs.apply(lambda x: x[1:-1] if x[0] == quote and x[-1] == quote else x)
     srs = srs.apply(lambda x: x.replace(quote, ''))
     srs = srs.apply(lambda x: x.replace('\n', ''))
-    srs = srs.apply(lambda x: quote+x+quote)
+    #srs = srs.apply(lambda x: quote+x+quote)
     return sep.join(srs)
 
 def fix_csv_file(file, folder, enc, quotechar, sep):
@@ -409,6 +412,8 @@ def fix_csv_file(file, folder, enc, quotechar, sep):
         with open(file, mode='r', encoding=enc, errors='replace') as inp:
             for line in inp:
                 nmbr = len(re.findall(quotechar, line))
+                seps = len(re.findall(sep, line)) + 1
+                header = line.replace(quotechar, '').split(sep)
                 logging.info(f'{nmbr} quotecharacters were found in the first line.')
                 break
         if nmbr > 0:
@@ -416,43 +421,40 @@ def fix_csv_file(file, folder, enc, quotechar, sep):
 
         counter = 0
         buffer = None
-        new_file = file.replace('.csv', '_new.csv')
-        with open(new_file, mode='w', encoding=enc, errors='replace') as out:
-            with open(file, mode='r', encoding=enc, errors='replace') as inp:
-                for line in inp:
-                    if len(re.findall(quotechar, line)) == number and buffer is not None and len(re.findall(quotechar, buffer)) == number:
-                        result.append(line_check(line, sep, quotechar))
-                        result.append(line_check(buffer, sep, quotechar))
-                        buffer = None
-                    elif len(re.findall(quotechar, line)) == number:
-                        result.append(line_check(line, sep, quotechar))
-                        buffer = None
-                    elif len(re.findall(quotechar, line)) % 2 == 0 and buffer is not None and len(re.findall(quotechar, buffer)) % 2 == 0:
-                        result.append(line_check(line, sep, quotechar))
-                        result.append(line_check(buffer, sep, quotechar))
-                        buffer = None
-                    elif len(re.findall(quotechar, line)) % 2 == 0:
-                        result.append(line_check(line, sep, quotechar))
-                        buffer = None
-                    elif buffer is None:
-                        buffer = line
-                    else:
-                        buffer += line
-                    counter += 1
-                    if counter > 200000:
-                        logging.info('writing chunk to disk')
-                        out.write('\n'.join(result))
-                        out.write('\n')
-                        result = []
-                        counter = 0
-                        logging.info('chunk has been written to disk')
-        return new_file, folder
+        #new_file = file.replace('.csv', '_new.csv')
+        #with open(new_file, mode='w', encoding=enc, errors='replace') as out:
+        with open(file, mode='r', encoding=enc, errors='replace') as inp:
+            for line in inp:
+                if len(re.findall(quotechar, line)) == number and buffer is not None and len(re.findall(quotechar, buffer)) == number:
+                    result.append(line_check(line, sep, quotechar, seps))
+                    result.append(line_check(buffer, sep, quotechar, seps))
+                    buffer = None
+                elif len(re.findall(quotechar, line)) == number:
+                    result.append(line_check(line, sep, quotechar, seps))
+                    buffer = None
+                elif len(re.findall(quotechar, line)) % 2 == 0 and buffer is not None and len(re.findall(quotechar, buffer)) % 2 == 0:
+                    result.append(line_check(line, sep, quotechar, seps))
+                    result.append(line_check(buffer, sep, quotechar, seps))
+                    buffer = None
+                elif len(re.findall(quotechar, line)) % 2 == 0:
+                    result.append(line_check(line, sep, quotechar, seps))
+                    buffer = None
+                elif buffer is None:
+                    buffer = line
+                else:
+                    buffer += line
+                counter += 1
+                if counter >= 200000:
+                    logging.info('writing chunk to disk')
+                    result = [x for x in result if x is not None]
+                    generate_parquet_file(pd.DataFrame(result, columns=header, dtype=str), folder)
+                    result = []
+                    counter = 0
+                    logging.info('chunk has been written to disk')
+        return 0
     except Exception as e:
         logging.error(f'fixing csv failed with: {e}')
-        try:
-            os.remove(new_file)
-        except:
-            pass
+        return 1
 
 
 def remove_ending(files):
