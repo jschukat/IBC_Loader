@@ -360,7 +360,7 @@ def import_file(file, folder) :
                 generation_result = generate_parquet_file(df, folder)
                 if generation_result == 2:
                     logging.info(f'trying to cope with {file} in a different way. Encoding: {encoding}, Quotechar: {quotechar}')
-                    return import_file(fix_csv_file(file, folder, encoding, quotechar))
+                    return import_file(fix_csv_file(file, folder, encoding, quotechar, delimiter))
                 elif generation_result != 0:
                     raise Exception('Parquet generation failed with unknown error and returned {generation_result}, trying again with different encoding.')
                 return None
@@ -389,7 +389,14 @@ def import_file(file, folder) :
     generate_parquet_file(df, folder)
     return None
 
-def fix_csv_file(file, folder, enc, quotechar):
+def line_check(strng, sep, quote):
+    srs = pd.Series(strng.split(sep))
+    srs = srs.apply(lambda x: x[1:-1] if x[0] == quote and x[-1] == quote else x)
+    srs = srs.apply(lambda x: x.replace(quote, ''))
+    srs = srs.apply(lambda x: ''.join([quote,x,quote]))
+    return sep.join(srs)
+
+def fix_csv_file(file, folder, enc, quotechar, sep):
     try:
         counter = 0
         number = -1
@@ -409,18 +416,18 @@ def fix_csv_file(file, folder, enc, quotechar):
             with open(file, mode='r', encoding=enc, errors='replace') as inp:
                 for line in inp:
                     if len(re.findall(quotechar, line)) == number and buffer is not None and len(re.findall(quotechar, buffer)) == number:
-                        result.append(line)
-                        result.append(buffer)
+                        result.append(line_check(line, sep, quotechar))
+                        result.append(line_check(buffer, sep, quotechar))
                         buffer = None
                     elif len(re.findall(quotechar, line)) == number:
-                        result.append(line)
+                        result.append(line_check(line, sep, quotechar))
                         buffer = None
                     elif len(re.findall(quotechar, line)) % 2 == 0 and buffer is not None and len(re.findall(quotechar, buffer)) % 2 == 0:
-                        result.append(line)
-                        result.append(buffer)
+                        result.append(line_check(line, sep, quotechar))
+                        result.append(line_check(buffer, sep, quotechar))
                         buffer = None
                     elif len(re.findall(quotechar, line)) % 2 == 0:
-                        result.append(line)
+                        result.append(line_check(line, sep, quotechar))
                         buffer = None
                     elif buffer is None:
                         buffer = line
