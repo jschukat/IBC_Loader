@@ -400,7 +400,7 @@ def line_check(strng, sep, quote, seps):
     srs = srs.apply(lambda x: x.replace(quote, ''))
     srs = srs.apply(lambda x: x.replace('\n', ''))
     #srs = srs.apply(lambda x: quote+x+quote)
-    return sep.join(srs)
+    return srs
 
 def fix_csv_file(file, folder, enc, quotechar, sep):
     logging.info('starting to fix csv')
