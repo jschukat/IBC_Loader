@@ -448,7 +448,7 @@ def fix_csv_file(file, folder, enc, quotechar, sep):
                     logging.info('writing chunk to disk')
                     result = [x for x in result if x is not None]
                     generate_parquet_file(pd.DataFrame(result, columns=header, dtype=str), folder)
-                    result = []
+                    result.clear()
                     counter = 0
                     logging.info('chunk has been written to disk')
         return 0
