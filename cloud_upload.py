@@ -416,7 +416,7 @@ def fix_csv_file(file, folder, enc, quotechar, sep):
         counter = 0
         buffer = None
         new_file = file.replace('.csv', '_new.csv')
-        with open(new_file, 'w', errors='replace') as out:
+        with open(new_file, 'w', encoding=enc, errors='replace') as out:
             with open(file, mode='r', encoding=enc, errors='replace') as inp:
                 for line in inp:
                     if len(re.findall(quotechar, line)) == number and buffer is not None and len(re.findall(quotechar, buffer)) == number:
@@ -438,7 +438,7 @@ def fix_csv_file(file, folder, enc, quotechar, sep):
                     else:
                         buffer += line.replace('\n', '')
                     counter += 1
-                    if counter > 100000:
+                    if counter > 200000:
                         logging.info('writing chunk to disk')
                         out.write('\n'.join(result))
                         out.write('\n')
