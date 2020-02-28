@@ -435,6 +435,10 @@ def fix_csv_file(file, folder, enc, quotechar):
         return new_file, folder
     except Exception as e:
         logging.error(f'fixing csv failed with: {e}')
+        try:
+            os.remove(new_file)
+        except:
+            pass
 
 
 def remove_ending(files):
