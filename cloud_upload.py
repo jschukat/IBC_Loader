@@ -445,7 +445,9 @@ def fix_csv_file(file, folder, enc, quotechar, sep):
                     buffer += line
                 counter += 1
                 if counter >= 200000:
-                    logging.info(f'the following lines show in- and output\n{str(line)}\n{str(line_check(line, sep, quotechar, seps))}\n')
+                    logging.info('the following lines show in- and output')
+                    print(str(line_check(line, sep, quotechar, seps)))
+                    print(line)
                     logging.info('writing chunk to disk')
                     result = [x for x in result if x is not None]
                     generate_parquet_file(pd.DataFrame(result, columns=header, dtype=str), folder)
