@@ -437,7 +437,7 @@ def fix_csv_file(file, folder, enc, quotechar, sep):
                     elif buffer is None:
                         buffer = line
                     else:
-                        buffer = ' '.join([buffer, line])
+                        buffer += line
                     counter += 1
                     if counter > 200000:
                         logging.info('writing chunk to disk')
