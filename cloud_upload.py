@@ -395,6 +395,7 @@ def line_check(strng, sep, quote):
     srs = pd.Series(strng.split(sep))
     srs = srs.apply(lambda x: x[1:-1] if x[0] == quote and x[-1] == quote else x)
     srs = srs.apply(lambda x: x.replace(quote, ''))
+    srs = srs.apply(lambda x: x.replace('\n', ''))
     srs = srs.apply(lambda x: ''.join([quote,x,quote]))
     return sep.join(srs)
 
