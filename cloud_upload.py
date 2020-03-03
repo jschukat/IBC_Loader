@@ -5,7 +5,8 @@ import logging
 import datetime
 import sys
 
-logname = ''.join([datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S'), '_uploader.log'])
+logname = ''.join([datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S'),
+                   '_uploader.log'])
 FORMAT = '%(asctime)s %(levelname)s %(message)s'
 logging.basicConfig(format=FORMAT, filename=logname, level=logging.INFO)
 
@@ -17,6 +18,7 @@ handler.setLevel(logging.INFO)
 formatter = logging.Formatter(FORMAT)
 handler.setFormatter(formatter)
 root.addHandler(handler)
+
 
 class LogFile(object):
     """File-like object to log text using the `logging` module."""
@@ -30,6 +32,7 @@ class LogFile(object):
     def flush(self):
         for handler in self.logger.handlers:
             handler.flush()
+
 
 # Redirect stdout and stderr
 sys.stdout = LogFile('stdout')
@@ -197,6 +200,7 @@ class cloud:
         api = self.get_jobs_api(pool_id) + "/{}/".format(job_id)
         return requests.post(api, headers=self.get_auth())
 
+
 def detect_encoding(file):
     logging.info(f'starting encoding determination')
     detector = UniversalDetector()
@@ -218,18 +222,17 @@ def detect_encoding(file):
         enc = 'utf-8'
     return enc
 
+
 def test_float(x):
     '''
     Function to determine if an imput can be converted to float
     '''
     try:
-        a = float(x)
-    except:
-        a = None
-    if a:
+        float(x)
         return True
-    else:
+    except ValueError:
         return False
+
 
 def determine_dialect(file, enc):
     sniffer = csv.Sniffer()
@@ -251,7 +254,8 @@ def determine_dialect(file, enc):
         escapechar = dialect.escapechar
         header = sniffer.has_header(data_str)
     except:
-        logging.warning('sniffer was unsuccessful, using a simplistic approach to determine the delimiter and existence of header.')
+        logging.warning('''sniffer was unsuccessful, using a simplistic approach
+                        to determine the delimiter and existence of header.''')
         line1 = data[0]
         delim = dict()
         for i in [';', ',', '\t', '|']:
@@ -263,9 +267,11 @@ def determine_dialect(file, enc):
             header = False
         else:
             header = True
-    logging.info(f'delimiter: {delimiter}, quotechar: {quotechar}, escapechar: {escapechar}, header: {header}')
-    return {'delimiter':delimiter, 'quotechar':quotechar,
-            'escapechar':escapechar, 'header':header}
+    logging.info(f'''delimiter: {delimiter}, quotechar: {quotechar},
+                     escapechar: {escapechar}, header: {header}''')
+    return {'delimiter': delimiter, 'quotechar': quotechar,
+            'escapechar': escapechar, 'header': header}
+
 
 def determine_number_format(file, encoding, delimiter):
     counter = 0
@@ -291,7 +297,8 @@ def determine_number_format(file, encoding, delimiter):
     else:
         return {'thousands': ',', 'decimal': '.'}
 
-def import_file(file, folder) :
+
+def import_file(file, folder):
     # determine delimiter of csv file
     # assumes normal encoding of the file
     df = None
@@ -317,16 +324,16 @@ def import_file(file, folder) :
             try:
                 try:
                     pd_config = {
-                                'filepath_or_buffer':file,
-                                'encoding':enc,
-                                'sep':delimiter,
-                                'error_bad_lines':False,
-                                'parse_dates':False,
-                                'warn_bad_lines':True,
-                                'skip_blank_lines':True,
-                                'escapechar':escapechar,
-                                'chunksize':200000,
-                                'engine':'python',
+                                'filepath_or_buffer': file,
+                                'encoding': enc,
+                                'sep': delimiter,
+                                'error_bad_lines': False,
+                                'parse_dates': False,
+                                'warn_bad_lines': True,
+                                'skip_blank_lines': True,
+                                'escapechar': escapechar,
+                                'chunksize': 200000,
+                                'engine': 'python',
                                 }
                     if cl.as_string:
                         pd_config['low_memory'] = True
@@ -339,7 +346,8 @@ def import_file(file, folder) :
                     df = pd.read_csv(**pd_config)
                     logging.info('csv file successfully imported')
                 except MemoryError:
-                    logging.error('ran out of memory, will retry with all columns of type string')
+                    logging.error('''ran out of memory, will retry with all
+                                     columns of type string''')
                     pd_config['low_memory'] = True
                     pd_config['dtype'] = str
                     df = pd.read_csv(**pd_config)
@@ -349,7 +357,8 @@ def import_file(file, folder) :
                     pd_config['encoding'] = 'utf-8'
                     df = pd.read_csv(**pd_config)
                 except Exception as f:
-                    logging.exception(f'errorhandling failed, unable to read file: {file}\nerror is {f}')
+                    logging.exception(f'''errorhandling failed, unable to read
+                                          file: {file}\nerror is {f}''')
                 if type(df) is pd.DataFrame:
                     col_new = []
                     for col in df.columns:
@@ -365,7 +374,9 @@ def import_file(file, folder) :
                     else:
                         logging.error(f'{file} couldn\'t be fixed')
                 elif generation_result != 0:
-                    raise Exception('Parquet generation failed with unknown error and returned {generation_result}, trying again with different encoding.')
+                    raise Exception(f'''Parquet generation failed with unknown
+                                    error and returned {generation_result},
+                                    trying again with different encoding.''')
                 return None
             except:
                 pass
@@ -392,15 +403,17 @@ def import_file(file, folder) :
     generate_parquet_file(df, folder)
     return None
 
+
 def line_check(strng, sep, quote, seps):
     srs = pd.Series(strng.split(sep))
     if len(srs) != seps:
         return None
-    #srs = srs.apply(lambda x: x[1:-1] if x[0] == quote and x[-1] == quote else x)
+    # srs = srs.apply(lambda x: x[1:-1] if x[0] == quote and x[-1] == quote else x)
     srs = srs.apply(lambda x: x.replace(quote, ''))
     srs = srs.apply(lambda x: x.replace('\n', ''))
-    #srs = srs.apply(lambda x: quote+x+quote)
+    # srs = srs.apply(lambda x: quote+x+quote)
     return srs
+
 
 def fix_csv_file(file, folder, enc, quotechar, sep):
     logging.info('starting to fix csv')
@@ -421,8 +434,8 @@ def fix_csv_file(file, folder, enc, quotechar, sep):
 
         counter = 0
         buffer = None
-        #new_file = file.replace('.csv', '_new.csv')
-        #with open(new_file, mode='w', encoding=enc, errors='replace') as out:
+        # new_file = file.replace('.csv', '_new.csv')
+        # with open(new_file, mode='w', encoding=enc, errors='replace') as out:
         with open(file, mode='r', encoding=enc, errors='replace') as inp:
             for line in inp:
                 if len(re.findall(quotechar, line)) == number and buffer is not None and len(re.findall(quotechar, buffer)) == number:
@@ -468,6 +481,7 @@ def remove_ending(files):
     else:
         return return_list[0]
 
+
 def ending(file):
     return(file.split('.')[-1].lower())
 
@@ -485,15 +499,17 @@ def create_folders(files, path):
         return_dict[file] = create_folder(path, folder_name)
     return return_dict
 
+
 def create_folder(path, name):
-        fldr = os.path.join(path, name)
-        if os.path.exists(fldr):
-            logging.info(f'remove existing folder: {fldr}')
-            shutil.rmtree(fldr)
-        time.sleep(1)
-        logging.info(f'create: {fldr}')
-        os.makedirs(fldr)
-        return fldr
+    fldr = os.path.join(path, name)
+    if os.path.exists(fldr):
+        logging.info(f'remove existing folder: {fldr}')
+        shutil.rmtree(fldr)
+    time.sleep(1)
+    logging.info(f'create: {fldr}')
+    os.makedirs(fldr)
+    return fldr
+
 
 def generate_parquet_file(df, folder):
     """
@@ -592,14 +608,6 @@ if cl.transformation == 1:
                 compression = 'SEVEN_ZIP'
             elif any(map(lambda x: ending(x) == 'gzip' or ending(x) == 'gz', cwd_files)):
                 compression = 'GZIP'
-                """
-                for file in cwd_files:
-                    if 'HEADER' in file:
-                        name = file.split('.')[0]
-                        with gzip.open(file, 'rb') as f_in:
-                            with open('.'.join([name, 'csv']), 'wb') as f_out:
-                                shutil.copyfileobj(f_in, f_out)
-                """
             elif any(map(lambda x: ending(x) == 'zip', cwd_files)):
                 # TODO: move moving zips to the extraction part so that finished zips
                 # don't get mixed up with unfinished zips
@@ -657,7 +665,6 @@ if cl.transformation == 1:
                 logging.info('transforamtion finished.')
         os.remove(sample_name)
 
-
     files = files_left(transformationdir_general)
     logging.info(f'non abap files about to be transformed: {files}')
 
@@ -667,10 +674,8 @@ if cl.transformation == 1:
     for file in files:
         logging.info(f'start loop for: {file}')
         file_df = import_file(file, folders[file])
-        #generate_parquet_file(file_df, folders[file])
+        # generate_parquet_file(file_df, folders[file])
         print('\n')
-
-
 
 if cl.upload == 1:
     url = cl.url
@@ -737,7 +742,7 @@ update every 15 seconds. Logs will be written to: {logname}''')
                             pass
                         elif i['status'] == 'DONE':
                             jobstatus[jobids] = True
-                            printout = ' '.join([i['targetName'],'was successfully installed in the database'])
+                            printout = ' '.join([i['targetName'], 'was successfully installed in the database'])
                             logging.info(printout)
                         elif i['status'] != 'RUNNING':
                             jobstatus[jobids] = True
@@ -750,7 +755,7 @@ update every 15 seconds. Logs will be written to: {logname}''')
                     break
                 except:
                     pass
-        if all(status == True for status in jobstatus.values()):
+        if all(status is True for status in jobstatus.values()):
             running = False
         time.sleep(15)
 logging.info('all done')
