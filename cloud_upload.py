@@ -53,11 +53,9 @@ try:
     import zipfile
     import shutil
     import fastparquet as fp
-    import snappy
     import pandas as pd
     import csv
     from chardet.universaldetector import UniversalDetector
-    from collections import defaultdict
     from pyxlsb import open_workbook as open_xlsb
 except ModuleNotFoundError as e:
     logging.error(e)
@@ -72,10 +70,10 @@ except ModuleNotFoundError as e:
 # OUT:  list containing files
 # =============================================================================
 def files_left(path):
-    t1 = glob.glob(''.join([path,'/*.csv']))
-    t2 = glob.glob(''.join([path,'/*.xls']))
-    t3 = glob.glob(''.join([path,'/*.xlsx']))
-    t4 = glob.glob(''.join([path,'/*.xlsb']))
+    t1 = glob.glob(''.join([path, '/*.csv']))
+    t2 = glob.glob(''.join([path, '/*.xls']))
+    t3 = glob.glob(''.join([path, '/*.xlsx']))
+    t4 = glob.glob(''.join([path, '/*.xlsb']))
     left_overs = []
     left_overs.extend(t1)
     left_overs.extend(t2)
@@ -93,7 +91,7 @@ def files_left(path):
 # OUT:  directory as string or None
 # =============================================================================
 def sort_abap(path):
-    t1 = glob.glob(os.path.join(path,'*'))
+    t1 = glob.glob(os.path.join(path, '*'))
     for file in t1:
         splt = os.path.basename(file).split('.')
         if len(splt) > 2:
@@ -713,7 +711,7 @@ if cl.upload == 1:
     dirs = [join(dir_path, f) for f in listdir(dir_path) if os.path.isdir(join(dir_path, f))]
     logging.info(f'Dirs to be uploaded:\n{dirs}')
     uppie = cloud(tenant=tenant, realm=cluster, api_key=apikey)
-    for dr in dirs :
+    for dr in dirs:
         if dr == '__pycache__':
             continue
         # TODO: replace split \\ with os.path.split(file)[1])
@@ -738,7 +736,7 @@ update every 15 seconds. Logs will be written to: {logname}''')
                     if i['id'] == jobids:
                         if i['status'] == 'QUEUED':
                             logging.debug(f'job for {i["targetName"]} queued')
-                        elif jobstatus[jobids] == True:
+                        elif jobstatus[jobids] is True:
                             pass
                         elif i['status'] == 'DONE':
                             jobstatus[jobids] = True
@@ -752,7 +750,7 @@ update every 15 seconds. Logs will be written to: {logname}''')
                         break
                 except (KeyboardInterrupt, SystemExit):
                     logging.error('terminating program\n')
-                    break
+                    quit()
                 except:
                     pass
         if all(status is True for status in jobstatus.values()):
