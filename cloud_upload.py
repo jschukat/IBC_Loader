@@ -367,7 +367,7 @@ def import_file(file, folder):
                 generation_result = generate_parquet_file(df, folder)
                 if generation_result == 2:
                     logging.info(f'trying to cope with {file} in a different way. Encoding: {encoding}, Quotechar: {quotechar}')
-                    if fix_csv_file(file, folder, encoding, quotechar, delimiter) == 0:
+                    if fix_csv_file(file, folder, encoding, quotechar, delimiter, escapechar) == 0:
                         logging.info(f'successfully fixed {file}')
                     else:
                         logging.error(f'{file} couldn\'t be fixed')
@@ -413,53 +413,45 @@ def line_check(strng, sep, quote, seps):
     return srs
 
 
-def fix_csv_file(file, folder, enc, quotechar, sep):
+def fix_csv_file(file, folder, enc, quotechar, sep, escapechar):
     logging.info('starting to fix csv')
     try:
-        counter = 0
-        number = -1
-        result = []
-        first_line = None
         with open(file, mode='r', encoding=enc, errors='replace') as inp:
             for line in inp:
-                nmbr = len(re.findall(quotechar, line))
-                seps = len(re.findall(sep, line)) + 1
+                seps = len(re.findall(sep, line))
                 header = line.replace(quotechar, '').split(sep)
-                logging.info(f'{nmbr} quotecharacters were found in the first line.')
+                logging.info(f'{seps+1} columns were found in the first line.')
                 break
-        if nmbr > 0:
-            number = nmbr
 
         counter = 0
-        buffer = None
-        # new_file = file.replace('.csv', '_new.csv')
-        # with open(new_file, mode='w', encoding=enc, errors='replace') as out:
+        buffer = []
         with open(file, mode='r', encoding=enc, errors='replace') as inp:
             for line in inp:
-                if len(re.findall(quotechar, line)) == number and buffer is not None and len(re.findall(quotechar, buffer)) == number:
-                    result.append(line_check(line, sep, quotechar, seps))
-                    result.append(line_check(buffer, sep, quotechar, seps))
-                    buffer = None
-                elif len(re.findall(quotechar, line)) == number:
-                    result.append(line_check(line, sep, quotechar, seps))
-                    buffer = None
-                elif len(re.findall(quotechar, line)) % 2 == 0 and buffer is not None and len(re.findall(quotechar, buffer)) % 2 == 0:
-                    result.append(line_check(line, sep, quotechar, seps))
-                    result.append(line_check(buffer, sep, quotechar, seps))
-                    buffer = None
-                elif len(re.findall(quotechar, line)) % 2 == 0:
-                    result.append(line_check(line, sep, quotechar, seps))
-                    buffer = None
-                elif buffer is None:
-                    buffer = line
-                else:
-                    buffer += line
+                buffer.append(line)
                 counter += 1
                 if counter >= 200000:
+                    text = ''.join(buffer)
+                    text = text.replace(quotechar, '')
+                    text = re.sub(f'^([^{sep}\n]*{sep}){{{seps},}}[^{sep}\n]*$', '', text, flags=re.M)
+                    text = re.sub(f'^([^{sep}\n]*{sep}){{{0},{seps-2}}}[^{sep}\n]*$', '', text, flags=re.M)
+                    pd_config = {
+                                'filepath_or_buffer': text,
+                                'sep': sep,
+                                'error_bad_lines': False,
+                                'parse_dates': False,
+                                'warn_bad_lines': True,
+                                'skip_blank_lines': True,
+                                'escapechar': escapechar,
+                                'chunksize': 200000,
+                                'engine': 'python',
+                                'low_memory': True,
+                                'dtype': str,
+                                'quoting': 3,
+                                'columns': header,
+                                }
+                    result = pd.DataFrame(**pd_config)
                     logging.info('writing chunk to disk')
-                    result = [x for x in result if x is not None]
-                    generate_parquet_file(pd.DataFrame(result, columns=header, dtype=str), folder)
-                    result.clear()
+                    generate_parquet_file(result, folder)
                     counter = 0
                     logging.info('chunk has been written to disk')
         return 0
