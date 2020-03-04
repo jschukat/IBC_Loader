@@ -57,6 +57,7 @@ try:
     import csv
     from chardet.universaldetector import UniversalDetector
     from pyxlsb import open_workbook as open_xlsb
+    from io import StringIO
 except ModuleNotFoundError as e:
     logging.error(e)
     logging.error('please install missing packages to use this program.')
@@ -409,6 +410,7 @@ def manipulate_string(buffer, quotechar, sep, seps, escapechar, header, folder):
     text = re.sub(f'^([^{sep}\n]*{sep}){{{seps},}}[^{sep}\n]*$', '', text, flags=re.M)
     text = re.sub(f'^([^{sep}\n]*{sep}){{{0},{seps-2}}}[^{sep}\n]*$', '', text, flags=re.M)
     logging.info(text)
+    text = StringIO(text)
     pd_config = {
                 'filepath_or_buffer': text,
                 'sep': sep,
