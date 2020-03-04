@@ -408,7 +408,7 @@ def manipulate_string(buffer, quotechar, sep, seps, escapechar, header, folder, 
     text = text.replace(quotechar, '')
     text = re.sub(f'^([^{sep}\n]*{sep}){{{seps+1},}}[^{sep}\n]*$', '', text, flags=re.M)
     text = re.sub(f'^([^{sep}\n]*{sep}){{{0},{seps-1}}}[^{sep}\n]*$', '', text, flags=re.M)
-    #text = StringIO(text)
+    text = StringIO(text)
     pd_config = {
                 'filepath_or_buffer': text,
                 'encoding': enc,
