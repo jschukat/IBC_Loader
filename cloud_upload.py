@@ -412,7 +412,7 @@ def manipulate_string(buffer, quotechar, sep, seps, escapechar, header, folder):
     logging.info(text)
     text = StringIO(text)
     pd_config = {
-                'filepath_or_buffer': text,
+                #'filepath_or_buffer': text,
                 'sep': sep,
                 'error_bad_lines': False,
                 'parse_dates': False,
@@ -426,7 +426,7 @@ def manipulate_string(buffer, quotechar, sep, seps, escapechar, header, folder):
                 'quoting': 3,
                 'columns': header,
                 }
-    result = pd.DataFrame(**pd_config)
+    result = pd.DataFrame(text, **pd_config)
     logging.info('writing chunk to disk')
     generate_parquet_file(result, folder)
     logging.info('chunk has been written to disk')
