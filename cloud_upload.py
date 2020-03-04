@@ -404,12 +404,10 @@ def import_file(file, folder):
 
 
 def manipulate_string(buffer, quotechar, sep, seps, escapechar, header, folder):
-    logging.info(buffer[:10])
     text = ''.join(buffer)
     text = text.replace(quotechar, '')
     text = re.sub(f'^([^{sep}\n]*{sep}){{{seps+1},}}[^{sep}\n]*$', '', text, flags=re.M)
     text = re.sub(f'^([^{sep}\n]*{sep}){{{0},{seps-1}}}[^{sep}\n]*$', '', text, flags=re.M)
-    logging.info(text)
     #text = StringIO(text)
     pd_config = {
                 'filepath_or_buffer': text,
