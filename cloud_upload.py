@@ -402,6 +402,34 @@ def import_file(file, folder):
     return None
 
 
+def manipulate_string(buffer, quotechar, sep, seps, escapechar, header, folder):
+    logging.info(buffer[:10])
+    text = ''.join(buffer)
+    text = text.replace(quotechar, '')
+    text = re.sub(f'^([^{sep}\n]*{sep}){{{seps},}}[^{sep}\n]*$', '', text, flags=re.M)
+    text = re.sub(f'^([^{sep}\n]*{sep}){{{0},{seps-2}}}[^{sep}\n]*$', '', text, flags=re.M)
+    logging.info(text)
+    pd_config = {
+                'filepath_or_buffer': text,
+                'sep': sep,
+                'error_bad_lines': False,
+                'parse_dates': False,
+                'warn_bad_lines': True,
+                'skip_blank_lines': True,
+                'escapechar': escapechar,
+                'chunksize': 200000,
+                'engine': 'python',
+                'low_memory': True,
+                'dtype': str,
+                'quoting': 3,
+                'columns': header,
+                }
+    result = pd.DataFrame(**pd_config)
+    logging.info('writing chunk to disk')
+    generate_parquet_file(result, folder)
+    logging.info('chunk has been written to disk')
+
+
 def fix_csv_file(file, folder, enc, quotechar, sep, escapechar):
     logging.info('starting to fix csv')
     try:
@@ -419,32 +447,11 @@ def fix_csv_file(file, folder, enc, quotechar, sep, escapechar):
                 buffer.append(line)
                 counter += 1
                 if counter >= 200000:
-                    logging.info(buffer[:10])
-                    text = ''.join(buffer)
-                    text = text.replace(quotechar, '')
-                    text = re.sub(f'^([^{sep}\n]*{sep}){{{seps},}}[^{sep}\n]*$', '', text, flags=re.M)
-                    text = re.sub(f'^([^{sep}\n]*{sep}){{{0},{seps-2}}}[^{sep}\n]*$', '', text, flags=re.M)
-                    logging.info(text)
-                    pd_config = {
-                                'filepath_or_buffer': text,
-                                'sep': sep,
-                                'error_bad_lines': False,
-                                'parse_dates': False,
-                                'warn_bad_lines': True,
-                                'skip_blank_lines': True,
-                                'escapechar': escapechar,
-                                'chunksize': 200000,
-                                'engine': 'python',
-                                'low_memory': True,
-                                'dtype': str,
-                                'quoting': 3,
-                                'columns': header,
-                                }
-                    result = pd.DataFrame(**pd_config)
-                    logging.info('writing chunk to disk')
-                    generate_parquet_file(result, folder)
+                    manipulate_string(buffer, quotechar, sep, seps, escapechar, header, folder)
                     counter = 0
-                    logging.info('chunk has been written to disk')
+                    buffer.clear()
+        manipulate_string(buffer, quotechar, sep, seps, escapechar, header, folder)
+        counter = 0
         return 0
     except Exception as e:
         logging.error(f'fixing csv failed with: {e}')
