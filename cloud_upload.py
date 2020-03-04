@@ -452,7 +452,6 @@ def fix_csv_file(file, folder, enc, quotechar, sep, escapechar):
                     counter = 0
                     buffer.clear()
         manipulate_string(buffer, quotechar, sep, seps, escapechar, header, folder, enc)
-        counter = 0
         return 0
     except Exception as e:
         logging.error(f'fixing csv failed with: {e}')
