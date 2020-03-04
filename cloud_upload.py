@@ -410,7 +410,7 @@ def manipulate_string(buffer, quotechar, sep, seps, escapechar, header, folder):
     text = re.sub(f'^([^{sep}\n]*{sep}){{{seps},}}[^{sep}\n]*$', '', text, flags=re.M)
     text = re.sub(f'^([^{sep}\n]*{sep}){{{0},{seps-2}}}[^{sep}\n]*$', '', text, flags=re.M)
     logging.info(text)
-    text = StringIO(text)
+    #text = StringIO(text)
     pd_config = {
                 'filepath_or_buffer': text,
                 'sep': sep,
@@ -424,7 +424,7 @@ def manipulate_string(buffer, quotechar, sep, seps, escapechar, header, folder):
                 'low_memory': True,
                 'dtype': str,
                 'quoting': 3,
-                'columns': header,
+                'names': header,
                 }
     result = pd.read_csv(**pd_config)
     logging.info('writing chunk to disk')
