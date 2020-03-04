@@ -402,17 +402,6 @@ def import_file(file, folder):
     return None
 
 
-def line_check(strng, sep, quote, seps):
-    srs = pd.Series(strng.split(sep))
-    if len(srs) != seps:
-        return None
-    # srs = srs.apply(lambda x: x[1:-1] if x[0] == quote and x[-1] == quote else x)
-    srs = srs.apply(lambda x: x.replace(quote, ''))
-    srs = srs.apply(lambda x: x.replace('\n', ''))
-    # srs = srs.apply(lambda x: quote+x+quote)
-    return srs
-
-
 def fix_csv_file(file, folder, enc, quotechar, sep, escapechar):
     logging.info('starting to fix csv')
     try:
@@ -430,10 +419,12 @@ def fix_csv_file(file, folder, enc, quotechar, sep, escapechar):
                 buffer.append(line)
                 counter += 1
                 if counter >= 200000:
+                    logging.info(buffer[:10])
                     text = ''.join(buffer)
                     text = text.replace(quotechar, '')
                     text = re.sub(f'^([^{sep}\n]*{sep}){{{seps},}}[^{sep}\n]*$', '', text, flags=re.M)
                     text = re.sub(f'^([^{sep}\n]*{sep}){{{0},{seps-2}}}[^{sep}\n]*$', '', text, flags=re.M)
+                    logging.info(text)
                     pd_config = {
                                 'filepath_or_buffer': text,
                                 'sep': sep,
