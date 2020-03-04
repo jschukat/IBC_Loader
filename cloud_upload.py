@@ -403,7 +403,7 @@ def import_file(file, folder):
     return None
 
 
-def manipulate_string(buffer, quotechar, sep, seps, escapechar, header, folder):
+def manipulate_string(buffer, quotechar, sep, seps, escapechar, header, folder, enc):
     text = ''.join(buffer)
     text = text.replace(quotechar, '')
     text = re.sub(f'^([^{sep}\n]*{sep}){{{seps+1},}}[^{sep}\n]*$', '', text, flags=re.M)
@@ -411,6 +411,7 @@ def manipulate_string(buffer, quotechar, sep, seps, escapechar, header, folder):
     #text = StringIO(text)
     pd_config = {
                 'filepath_or_buffer': text,
+                'encoding': enc,
                 'sep': sep,
                 'error_bad_lines': False,
                 'parse_dates': False,
@@ -447,10 +448,10 @@ def fix_csv_file(file, folder, enc, quotechar, sep, escapechar):
                 buffer.append(line)
                 counter += 1
                 if counter >= 200000:
-                    manipulate_string(buffer, quotechar, sep, seps, escapechar, header, folder)
+                    manipulate_string(buffer, quotechar, sep, seps, escapechar, header, folder, enc)
                     counter = 0
                     buffer.clear()
-        manipulate_string(buffer, quotechar, sep, seps, escapechar, header, folder)
+        manipulate_string(buffer, quotechar, sep, seps, escapechar, header, folder, enc)
         counter = 0
         return 0
     except Exception as e:
