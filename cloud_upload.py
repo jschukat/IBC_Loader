@@ -365,7 +365,7 @@ def import_file(file, folder):
                             col = col.replace(i, '_')
                         col_new.append(col)
                     df.columns = col_new
-                generation_result = generate_parquet_file(df, folder, quotechar, sep)
+                generation_result = generate_parquet_file(df, folder, quotechar, delimiter)
                 if generation_result == 2:
                     logging.info(f'trying to cope with {file} in a different way. Encoding: {encoding}, Quotechar: {quotechar}')
                     if fix_csv_file(file, folder, encoding, quotechar, delimiter, escapechar) == 0:
