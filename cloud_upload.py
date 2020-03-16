@@ -437,7 +437,19 @@ def fix_csv_file(file, folder, enc, quotechar, sep, escapechar):
                 header = line.replace(quotechar, '').split(sep)
                 logging.info(f'{seps+1} columns were found in the first line.')
                 break
-
+        uni = []
+        counter = 0
+        if len(header) != len(set(header)):
+            logging.warning(f'''found {len(set(header)-len(header)} duplicates
+                                in header, will rename duplicate columns to
+                                prevent errors.''')
+            for i in header:
+                counter += 1
+                if i not in uni:
+                    uni.append(i)
+                else:
+                    uni.append(str(i)+str(counter))
+        header = uni
         counter = 0
         buffer = []
         with open(file, mode='r', encoding=enc, errors='replace') as inp:
