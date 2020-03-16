@@ -760,7 +760,7 @@ update every 15 seconds. Logs will be written to: {logname}''')
         if all(status is True for status in jobstatus.values()):
             running = False
             for i in jobs:
-                if i['id'] in jobids:
+                if i['id'] in jobstatus:
                     if i['status'] == 'DONE':
                         printout = ' '.join([i['targetName'], 'was successfully installed in the database'])
                         logging.info(printout)
