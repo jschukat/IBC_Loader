@@ -311,9 +311,9 @@ def import_file(file, folder):
         escapechar = dialect['escapechar']
         if escapechar is None:
             escapechar = '\\'
-        number_format = determine_number_format(file, encoding, delimiter)
-        thousand = number_format['thousands']
-        dec = number_format['decimal']
+        #number_format = determine_number_format(file, encoding, delimiter)
+        #thousand = number_format['thousands']
+        #dec = number_format['decimal']
 
         # TODO: make it have 3 tries and just change variables as exception
         # add UnicodeDecodeError open(file, mode='r', encoding=enc, errors='replace') as f:
