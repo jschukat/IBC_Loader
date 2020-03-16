@@ -311,9 +311,6 @@ def import_file(file, folder):
         escapechar = dialect['escapechar']
         if escapechar is None:
             escapechar = '\\'
-        #number_format = determine_number_format(file, encoding, delimiter)
-        #thousand = number_format['thousands']
-        #dec = number_format['decimal']
 
         # TODO: make it have 3 tries and just change variables as exception
         # add UnicodeDecodeError open(file, mode='r', encoding=enc, errors='replace') as f:
@@ -365,7 +362,7 @@ def import_file(file, folder):
                             col = col.replace(i, '_')
                         col_new.append(col)
                     df.columns = col_new
-                generation_result = generate_parquet_file(df, folder, quotechar, delimiter)
+                generation_result = generate_parquet_file(df, folder)
                 if generation_result == 2:
                     logging.info(f'trying to cope with {file} in a different way. Encoding: {encoding}, Quotechar: {quotechar}')
                     if fix_csv_file(file, folder, encoding, quotechar, delimiter, escapechar) == 0:
@@ -499,7 +496,7 @@ def create_folder(path, name):
     return fldr
 
 
-def generate_parquet_file(df, folder, quotechar='"', sep=';'):
+def generate_parquet_file(df, folder):
     """
     This function transforms an input dataframe or dataframe iterator into
     parquet files in the specified folder
@@ -558,7 +555,7 @@ def generate_parquet_file(df, folder, quotechar='"', sep=';'):
         return 0
     except Exception as e:
         logging.exception(f'Got exception "{e}" while executing function generate_parquet_file.')
-        if f"'{sep}' expected after '{quotechar}'" in str(e):
+        if "expected after" in str(e):
             return 2
         else:
             return 1
