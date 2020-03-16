@@ -759,5 +759,13 @@ update every 15 seconds. Logs will be written to: {logname}''')
                     pass
         if all(status is True for status in jobstatus.values()):
             running = False
-        time.sleep(15)
+            for i in jobs:
+                if i['id'] in jobids:
+                    if i['status'] == 'DONE':
+                        printout = ' '.join([i['targetName'], 'was successfully installed in the database'])
+                        logging.info(printout)
+                    else:
+                        logging.error(str(i))
+        else:
+            time.sleep(15)
 logging.info('all done')
