@@ -437,10 +437,15 @@ def fix_csv_file(file, folder, enc, quotechar, sep, escapechar):
                 header = line.replace(quotechar, '').split(sep)
                 logging.info(f'{seps+1} columns were found in the first line.')
                 break
-        uni = []
+        uni, col_new = [], []
         counter = 0
+        for col in header:
+            for i in [' ', '.', ',', ';', ':']:
+                col = col.replace(i, '_')
+            col_new.append(col)
+        header = col_new
         if len(header) != len(set(header)):
-            logging.warning(f'''found {len(set(header))-len(header)} duplicates
+            logging.warning(f'''found {len(header)-len(set(header))} duplicates
                                 in header, will rename duplicate columns to
                                 prevent future errors.''')
             for i in header:
