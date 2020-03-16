@@ -442,14 +442,14 @@ def fix_csv_file(file, folder, enc, quotechar, sep, escapechar):
         if len(header) != len(set(header)):
             logging.warning(f'''found {len(set(header)-len(header)} duplicates
                                 in header, will rename duplicate columns to
-                                prevent errors.''')
+                                prevent future errors.''')
             for i in header:
                 counter += 1
                 if i not in uni:
                     uni.append(i)
                 else:
                     uni.append(str(i)+str(counter))
-        header = uni
+            header = uni
         counter = 0
         buffer = []
         with open(file, mode='r', encoding=enc, errors='replace') as inp:
