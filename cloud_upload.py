@@ -683,7 +683,6 @@ if cl.transformation == 1:
 
 if cl.upload == 1:
     url = cl.url
-
     parts = []
     connectionflag = 1
     try:
@@ -746,13 +745,12 @@ update every 15 seconds. Logs will be written to: {logname}''')
                             pass
                         elif i['status'] == 'DONE':
                             jobstatus[jobids] = True
-                            printout = ' '.join([i['targetName'], 'was successfully installed in the database'])
-                            logging.info(printout)
+                            logging.info(f"{i['targetName']} was successfully installed in the database")
                         elif i['status'] != 'RUNNING':
                             jobstatus[jobids] = True
                             logging.error(str(i))
                         else:
-                            print('job for', i['targetName'], 'still running')
+                            print(f"job for {i['targetName']} still running")
                         break
                 except (KeyboardInterrupt, SystemExit):
                     logging.error('terminating program\n')
@@ -764,10 +762,9 @@ update every 15 seconds. Logs will be written to: {logname}''')
             for i in jobs:
                 if i['id'] in jobstatus:
                     if i['status'] == 'DONE':
-                        printout = ' '.join([i['targetName'], 'was successfully installed in the database'])
-                        logging.info(printout)
+                        logging.info(f"{i['targetName']} was successfully installed in the database")
                     else:
-                        logging.error(str(i))
+                        logging.error(f"{i['targetName']} failed with: {i['logs']}")
         else:
             time.sleep(15)
 logging.info('all done')
