@@ -440,7 +440,7 @@ def fix_csv_file(file, folder, enc, quotechar, sep, escapechar):
         uni = []
         counter = 0
         if len(header) != len(set(header)):
-            logging.warning(f'''found {len(set(header)-len(header)} duplicates
+            logging.warning(f'''found {len(set(header))-len(header)} duplicates
                                 in header, will rename duplicate columns to
                                 prevent future errors.''')
             for i in header:
