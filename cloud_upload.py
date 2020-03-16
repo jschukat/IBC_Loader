@@ -675,8 +675,10 @@ if cl.transformation == 1:
 
     for file in files:
         logging.info(f'start loop for: {file}')
-        file_df = import_file(file, folders[file])
-        # generate_parquet_file(file_df, folders[file])
+        try:
+            file_df = import_file(file, folders[file])
+        except Exception as e:
+            logging.exception(f'importing file failed with: {str(e)}')
         print('\n')
 
 if cl.upload == 1:
