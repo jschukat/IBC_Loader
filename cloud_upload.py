@@ -1,7 +1,6 @@
-
 # TODO: integrate _csv.Error Null bytes
 
-# this is an important fix
+
 
 import logging
 import datetime
@@ -214,7 +213,7 @@ def detect_encoding(file):
                 detector.feed(line)
                 if detector.done:
                     break
-                elif counter > 100000:
+                elif counter > 50000:
                     break
         detector.close()
         enc = detector.result['encoding'].lower()
