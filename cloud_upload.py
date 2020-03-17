@@ -1,6 +1,8 @@
 
 # TODO: integrate _csv.Error Null bytes
 
+# this is an important fix
+
 import logging
 import datetime
 import sys
@@ -487,8 +489,9 @@ def remove_ending(files):
 def ending(file):
     return(file.split('.')[-1].lower())
 
-# TODO: Change folder naming to replace dots with underscores and so on
+
 def create_folders(files, path):
+    # TODO: Change folder naming to replace dots with underscores and so on
     return_dict = {}
     allowed = set('0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_-')
     for file in files:
@@ -719,7 +722,6 @@ if cl.upload == 1:
     for dr in dirs:
         if dr == '__pycache__':
             continue
-        # TODO: replace split \\ with os.path.split(file)[1])
         logging.info(f'\nuploading: {os.path.split(dr)[-1]}')
         jobhandle = uppie.create_job(pool_id=poolid,
                                      data_connection_id=connectionid,
@@ -748,7 +750,7 @@ update every 15 seconds. Logs will be written to: {logname}''')
                             logging.info(f"{i['targetName']} was successfully installed in the database")
                         elif i['status'] != 'RUNNING':
                             jobstatus[jobids] = True
-                            logging.error(str(i))
+                            logging.error(f"{i['targetName']} failed with: {i['logs']}")
                         else:
                             print(f"job for {i['targetName']} still running")
                         break
