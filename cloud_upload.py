@@ -715,6 +715,16 @@ if cl.upload == 1:
     else:
         delta = False
     jobstatus = {}
+    single_par_files = [f for f in glob.glob(os.path.join(dir_path, '*.parquet'))]
+    for i in single_par_files:
+        splt = os.path.basename(i).split('.')
+        destination = os.path.join(dir_path, splt[0])
+        if not os.path.isdir(destination):
+            os.mkdir(destination)
+        try:
+            shutil.move(i, destination)
+        except Exception as e:
+            logging.exception(f'encountered {e} when trying to sort parquet files')
     dirs = [join(dir_path, f) for f in listdir(dir_path) if os.path.isdir(join(dir_path, f))]
     logging.info(f'Dirs to be uploaded:\n{dirs}')
     uppie = cloud(tenant=tenant, realm=cluster, api_key=apikey)
