@@ -150,7 +150,7 @@ def selectIn():
         path = textoutput
     inputdirname = filedialog.askdirectory(initialdir=path, title="Select dir")
     #enc = detect_encoding(inputdirname)
-    inputdirname = inputdirname.encode('utf-8')
+    inputdirname = inputdirname#.encode('utf-8').decode('utf-8')
     textinput.set(inputdirname)
     print(inputdirname)
 
