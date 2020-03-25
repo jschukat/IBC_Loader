@@ -198,15 +198,17 @@ def runlolarun():
 # apikey: create key in the cloud team under "My Account"
 # pool: Pool Analytics -> select target pool -> in url copy string after ui/
 
-url = '{ur}'
-apikey = '{ap}'
-outputdir = '{out}'
-inputdir = '{inp}'
-transformation = {tr}
-upload = {up}
-delta = {de}
-as_string = {st}
-agreed = {ag}\n""".encode())
+class cl():
+    pass
+cl.url = '{ur}'
+cl.apikey = '{ap}'
+cl.outputdir = '{out}'
+cl.inputdir = '{inp}'
+cl.transformation = {tr}
+cl.upload = {up}
+cl.delta = {de}
+cl.as_string = {st}
+cl.agreed = {ag}\n""".encode())
     print('saved to config.')
     if sys.platform == 'win32':
         cmd = ''.join(['python.exe "', os.path.join(os.getcwd(),
