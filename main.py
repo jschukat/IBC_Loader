@@ -149,8 +149,6 @@ def selectIn():
     else:
         path = textoutput
     inputdirname = filedialog.askdirectory(initialdir=path, title="Select dir")
-    #enc = detect_encoding(inputdirname)
-    inputdirname = inputdirname#.encode('utf-8').decode('utf-8')
     textinput.set(inputdirname)
     print(inputdirname)
 
@@ -193,7 +191,7 @@ def runlolarun():
     inp = textinput.get()#.encode('ansi').decode('utf-8')
     ag = agree
     print(out, inp)
-    with open('cloud_upload_config.py', 'w+') as conffile:
+    with open('cloud_upload_config.py', 'wb') as conffile:
         conffile.write("""# Example: url of cloud team: https://demo.eu-1.celonis.cloud/
 # tenant = 'demo'
 # cluster = 'eu-1'
@@ -208,7 +206,7 @@ transformation = {}
 upload = {}
 delta = {}
 as_string = {}
-agreed = {}\n""".format(ur, ap, out, inp, tr, up, de, st, ag))
+agreed = {}\n""".format(ur, ap, out, inp, tr, up, de, st, ag)).encode()
     print('saved to config.')
     if sys.platform == 'win32':
         cmd = ''.join(['python.exe "', os.path.join(os.getcwd(),
