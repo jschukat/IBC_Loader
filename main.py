@@ -3,10 +3,17 @@ from tkinter import *
 import os
 import subprocess
 import sys
-# TODO: make module import failsafe
+try:
+    from chardet.universaldetector import UniversalDetector
+except ModuleNotFoundError as e:
+    print(e)
+    print('please install missing packages to use this program.')
+    print('shutting down')
+    quit()
 try:
     import cloud_upload_config as ctc
-except:
+except Exception as e:
+    print(f'ran into the following exception when trying to open configfile: {e}')
     class ctc():
         pass
     ctc.url = 'Open connection settings or data pool (whichever applies) and paste the whole url in here'
@@ -39,7 +46,7 @@ except AttributeError:
         agree = True
     else:
         quit()
-except Exception as e:
+except Exception:
     raise
 
 # ********** Install dependencies ********** #
@@ -68,7 +75,7 @@ if sys.platform == 'linux':
             os.system(cmd)
 else:
     fast = os.popen('conda list').read()
-    if not 'python-snappy' in fast or not 'fastparquet' in fast:
+    if 'python-snappy' not in fast or 'fastparquet' not in fast:
         conda_check = subprocess.run(['where.exe', 'conda'])
         if conda_check.returncode == 0:
             print('installing fastparquet and snappy')
@@ -120,12 +127,28 @@ def checkContent(event):
             textpoolid.set(defaultPoolid)
 
 
+def detect_encoding(strg):
+    print('starting encoding determination')
+    detector = UniversalDetector()
+    detector.reset()
+    try:
+        detector.feed(strg)
+        detector.close()
+        enc = detector.result['encoding'].lower()
+        print(f'encoding: {detector.result}')
+    except:
+        enc = 'utf-8'
+    return enc
+
+
 def selectIn():
     if textoutput == 'This should be an empty directory, where the parquet files can be placed in.':
         path = "/"
     else:
         path = textoutput
     inputdirname = filedialog.askdirectory(initialdir=path, title="Select dir")
+    enc = detect_encoding(inputdirname)
+    inputdirname = inputdirname.decode(enc).encode(enc)
     textinput.set(inputdirname)
     print(inputdirname)
 
