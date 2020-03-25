@@ -121,13 +121,21 @@ def checkContent(event):
 
 
 def selectIn():
-    inputdirname = filedialog.askdirectory(initialdir="/", title="Select dir")
+    if textoutput == 'This should be an empty directory, where the parquet files can be placed in.':
+        path = "/"
+    else:
+        path = textoutput
+    inputdirname = filedialog.askdirectory(initialdir=path, title="Select dir")
     textinput.set(inputdirname)
     print(inputdirname)
 
 
 def selectOut():
-    outputdir = filedialog.askdirectory(initialdir="/", title="Select dir")
+    if textinput == 'This should be the directory, where the ABAP (unzipped, gzip, 7z) and or other csv / excel files are stored.':
+        path = "/"
+    else:
+        path = textinput
+    outputdir = filedialog.askdirectory(initialdir=path, title="Select dir")
     textoutput.set(outputdir)
     print(outputdir)
 
@@ -304,6 +312,7 @@ frameinput.pack(fill=X)
 
 labelinput = Button(frameinput, text='Select ABAP / csv / excel dir', command=selectIn)
 labelinput.pack(side=LEFT, padx=10, pady=5)
+global textinput
 textinput = StringVar()
 entryinput = Entry(frameinput, textvariable=textinput, name='input')
 if ctc.inputdir == '':
@@ -321,6 +330,7 @@ frameoutput.pack(fill=X)
 
 labeloutput = Button(frameoutput, text='Select parquet dir', command=selectOut)
 labeloutput.pack(side=LEFT, padx=10, pady=5)
+global textoutput
 textoutput = StringVar()
 entryoutput = Entry(frameoutput, textvariable=textoutput, name='output')
 if ctc.outputdir == '':
