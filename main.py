@@ -192,21 +192,21 @@ def runlolarun():
     ag = agree
     print(out, inp)
     with open('cloud_upload_config.py', 'wb') as conffile:
-        conffile.write("""# Example: url of cloud team: https://demo.eu-1.celonis.cloud/
+        conffile.write(f"""# Example: url of cloud team: https://demo.eu-1.celonis.cloud/
 # tenant = 'demo'
 # cluster = 'eu-1'
 # apikey: create key in the cloud team under "My Account"
 # pool: Pool Analytics -> select target pool -> in url copy string after ui/
 
-url = '{}'
-apikey = '{}'
-outputdir = '{}'
-inputdir = '{}'
-transformation = {}
-upload = {}
-delta = {}
-as_string = {}
-agreed = {}\n""".format(ur, ap, out, inp, tr, up, de, st, ag)).encode()
+url = '{ur}'
+apikey = '{ap}'
+outputdir = '{out}'
+inputdir = '{inp}'
+transformation = {tr}
+upload = {up}
+delta = {de}
+as_string = {st}
+agreed = {ag}\n""".encode())
     print('saved to config.')
     if sys.platform == 'win32':
         cmd = ''.join(['python.exe "', os.path.join(os.getcwd(),
