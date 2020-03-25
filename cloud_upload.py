@@ -44,7 +44,6 @@ try:
     from os import listdir
     from os.path import isfile, join
     import os
-    import cloud_upload_config as cl
     import psutil
     import re
     import time
@@ -59,6 +58,8 @@ try:
     from chardet.universaldetector import UniversalDetector
     from pyxlsb import open_workbook as open_xlsb
     from io import StringIO
+    with open('cloud_upload_config.py', mode='r', encoding='utf-8') as inp:
+        exec(inp.read())
 except ModuleNotFoundError as e:
     logging.error(e)
     logging.error('please install missing packages to use this program.')
