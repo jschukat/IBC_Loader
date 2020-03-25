@@ -136,7 +136,9 @@ def detect_encoding(strg):
         detector.close()
         enc = detector.result['encoding'].lower()
         print(f'encoding: {detector.result}')
-    except:
+    except Exception as e:
+        print(f'''got the following exception while
+                  trying to detect encoding: {e}''')
         enc = 'utf-8'
     return enc
 
@@ -148,7 +150,7 @@ def selectIn():
         path = textoutput
     inputdirname = filedialog.askdirectory(initialdir=path, title="Select dir")
     enc = detect_encoding(inputdirname)
-    inputdirname = inputdirname.decode(enc).encode(enc)
+    inputdirname = inputdirname.decode(enc)
     textinput.set(inputdirname)
     print(inputdirname)
 
