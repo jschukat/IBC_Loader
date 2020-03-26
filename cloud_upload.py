@@ -336,6 +336,7 @@ def import_file(file, folder):
                                 'escapechar': escapechar,
                                 'chunksize': 200000,
                                 'engine': 'python',
+                                'keep_default_na': False,
                                 }
                     if cl.as_string:
                         pd_config['low_memory'] = True
@@ -399,7 +400,9 @@ def import_file(file, folder):
             logging.error(f'unable to read {file} with the following error: {e}')
     else:
         try:
-            df = pd.read_excel(file)
+            df = pd.read_excel(file,
+                               keep_default_na=False,
+                               )
         except Exception as e:
             logging.error(f'unable to read {file} with the following error: {e}')
     generate_parquet_file(df, folder)
