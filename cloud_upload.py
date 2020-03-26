@@ -9,20 +9,25 @@ import sys
 logname = ''.join([datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S'),
                    '_uploader.log'])
 FORMAT = '%(asctime)s %(levelname)s %(message)s'
-logging.basicConfig(format=FORMAT, filename=logname, level=logging.INFO)
+formatter = logging.Formatter(FORMAT)
+log_level = logging.INFO
+#logging.basicConfig(format=FORMAT, filename=logname, level=logging.INFO)
 
 root = logging.getLogger()
-root.setLevel(logging.INFO)
+root.setLevel(log_level)
+
+file_handler = logging.FileHandler(filename=logname, mode='a', encoding='utf-8')
+file_handler.setLevel(log_level)
+file_handler.setFormatter(formatter)
+root.addHandler(file_handler)
 
 handler = logging.StreamHandler(sys.stdout)
-handler.setLevel(logging.INFO)
-formatter = logging.Formatter(FORMAT)
+handler.setLevel(log_level)
 handler.setFormatter(formatter)
 root.addHandler(handler)
 
 
 class LogFile(object):
-    """File-like object to log text using the `logging` module."""
 
     def __init__(self, name=None):
         self.logger = logging.getLogger(name)
@@ -58,8 +63,7 @@ try:
     from chardet.universaldetector import UniversalDetector
     from pyxlsb import open_workbook as open_xlsb
     from io import StringIO
-    with open('cloud_upload_config.py', mode='r', encoding='utf-8') as inp:
-        exec(inp.read())
+    import cloud_upload_config as cl
 except ModuleNotFoundError as e:
     logging.error(e)
     logging.error('please install missing packages to use this program.')
