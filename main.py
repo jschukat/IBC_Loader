@@ -3,10 +3,17 @@ from tkinter import *
 import os
 import subprocess
 import sys
-# TODO: make module import failsafe
+try:
+    from chardet.universaldetector import UniversalDetector
+except ModuleNotFoundError as e:
+    print(e)
+    print('please install missing packages to use this program.')
+    print('shutting down')
+    quit()
 try:
     import cloud_upload_config as ctc
-except:
+except Exception as e:
+    print(f'ran into the following exception when trying to open configfile: {e}')
     class ctc():
         pass
     ctc.url = 'Open connection settings or data pool (whichever applies) and paste the whole url in here'
@@ -39,7 +46,7 @@ except AttributeError:
         agree = True
     else:
         quit()
-except Exception as e:
+except Exception:
     raise
 
 # ********** Install dependencies ********** #
@@ -68,7 +75,7 @@ if sys.platform == 'linux':
             os.system(cmd)
 else:
     fast = os.popen('conda list').read()
-    if not 'python-snappy' in fast or not 'fastparquet' in fast:
+    if 'python-snappy' not in fast or 'fastparquet' not in fast:
         conda_check = subprocess.run(['where.exe', 'conda'])
         if conda_check.returncode == 0:
             print('installing fastparquet and snappy')
@@ -120,14 +127,38 @@ def checkContent(event):
             textpoolid.set(defaultPoolid)
 
 
+def detect_encoding(strg):
+    print('starting encoding determination')
+    detector = UniversalDetector()
+    detector.reset()
+    try:
+        detector.feed(strg)
+        detector.close()
+        enc = detector.result['encoding'].lower()
+        print(f'encoding: {detector.result}')
+    except Exception as e:
+        print(f'''got the following exception while
+                  trying to detect encoding: {e}''')
+        enc = 'utf-8'
+    return enc
+
+
 def selectIn():
-    inputdirname = filedialog.askdirectory(initialdir="/", title="Select dir")
+    if textoutput == 'This should be an empty directory, where the parquet files can be placed in.':
+        path = "/"
+    else:
+        path = textoutput
+    inputdirname = filedialog.askdirectory(initialdir=path, title="Select dir")
     textinput.set(inputdirname)
     print(inputdirname)
 
 
 def selectOut():
-    outputdir = filedialog.askdirectory(initialdir="/", title="Select dir")
+    if textinput == 'This should be the directory, where the ABAP (unzipped, gzip, 7z) and or other csv / excel files are stored.':
+        path = "/"
+    else:
+        path = textinput
+    outputdir = filedialog.askdirectory(initialdir=path, title="Select dir")
     textoutput.set(outputdir)
     print(outputdir)
 
@@ -160,22 +191,22 @@ def runlolarun():
     inp = textinput.get()#.encode('ansi').decode('utf-8')
     ag = agree
     print(out, inp)
-    with open('cloud_upload_config.py', 'w+') as conffile:
-        conffile.write("""# Example: url of cloud team: https://demo.eu-1.celonis.cloud/
+    with open('cloud_upload_config.py', 'wb') as conffile:
+        conffile.write(f"""# Example: url of cloud team: https://demo.eu-1.celonis.cloud/
 # tenant = 'demo'
 # cluster = 'eu-1'
 # apikey: create key in the cloud team under "My Account"
 # pool: Pool Analytics -> select target pool -> in url copy string after ui/
 
-url = '{}'
-apikey = '{}'
-outputdir = '{}'
-inputdir = '{}'
-transformation = {}
-upload = {}
-delta = {}
-as_string = {}
-agreed = {}\n""".format(ur, ap, out, inp, tr, up, de, st, ag))
+url = '{ur}'
+apikey = '{ap}'
+outputdir = '{out}'
+inputdir = '{inp}'
+transformation = {tr}
+upload = {up}
+delta = {de}
+as_string = {st}
+agreed = {ag}\n""".encode())
     print('saved to config.')
     if sys.platform == 'win32':
         cmd = ''.join(['python.exe "', os.path.join(os.getcwd(),
@@ -304,6 +335,7 @@ frameinput.pack(fill=X)
 
 labelinput = Button(frameinput, text='Select ABAP / csv / excel dir', command=selectIn)
 labelinput.pack(side=LEFT, padx=10, pady=5)
+global textinput
 textinput = StringVar()
 entryinput = Entry(frameinput, textvariable=textinput, name='input')
 if ctc.inputdir == '':
@@ -321,6 +353,7 @@ frameoutput.pack(fill=X)
 
 labeloutput = Button(frameoutput, text='Select parquet dir', command=selectOut)
 labeloutput.pack(side=LEFT, padx=10, pady=5)
+global textoutput
 textoutput = StringVar()
 entryoutput = Entry(frameoutput, textvariable=textoutput, name='output')
 if ctc.outputdir == '':
