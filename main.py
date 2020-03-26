@@ -29,7 +29,7 @@ except Exception as e:
 # ********** Install dependencies ********** #
 try:
     if not ctc.agreed:
-        with open('disclaimer.md', 'r') as disc:
+        with open('disclaimer.md', mode='r', encoding='utf-8') as disc:
             print(disc.read())
         agree = input('\n\nDo you agree with these terms of use? (y/N)')
         if agree == 'y' or agree == 'Y':
