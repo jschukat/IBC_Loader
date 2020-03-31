@@ -66,6 +66,7 @@ try:
     import cloud_upload_config as cl
     from itertools import product
     import copy
+    from pathlib import Path
 except ModuleNotFoundError as e:
     logging.error(e)
     logging.error('please install missing packages to use this program.')
@@ -433,12 +434,22 @@ def import_file(file, folder):
                     dfs.append(df[i])
                 df = pd.concat(dfs, ignore_index=True)
             else:
+                file = Path(file)
+                file_name = Path(file).name.split('.')[0]
+                parent = folder.parent
+                folder.rmdir()
                 for match in matches:
                     dfs = []
+                    sheet_name = list(matches[match])[0]
+                    folder_name = f'{file_name}_{sheet_name}'
+                    folder_name = folder_name.replace(' ', '_').replace('.', '_')
+                    new_folder = parent / folder_name
+                    new_folder.mkdir()
                     for i in list(filter(lambda n: n in matches[match], df)):
                         dfs.append(df[i])
-                    df_new = pd.concat(dfs, ignore_index=True)
-                    print(df_new)
+                    new_df = pd.concat(dfs, ignore_index=True)
+                    generate_parquet_file(new_df, new_folder)
+                return None
         except Exception as e:
             logging.error(f'unable to read {file} with the following error: {e}')
     generate_parquet_file(df, folder)
