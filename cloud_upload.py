@@ -403,10 +403,14 @@ def import_file(file, folder):
     else:
         try:
             matches = {}
-            df = pd.read_excel(file,
-                               sheet_name=None,
-                               keep_default_na=False,
-                               )
+            pd_config = {
+                        'io': file,
+                        'sheet_name': None,
+                        'keep_default_na': False,
+                        }
+            if cl.as_string:
+                pd_config['dtype'] = str
+            df = pd.read_excel(**pd_config)
             for a, b in product(df, df):
                 col_a = df[a].columns
                 col_b = df[b].columns
