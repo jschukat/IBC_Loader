@@ -64,6 +64,8 @@ try:
     from pyxlsb import open_workbook as open_xlsb
     from io import StringIO
     import cloud_upload_config as cl
+    from itertools import product
+    import copy
 except ModuleNotFoundError as e:
     logging.error(e)
     logging.error('please install missing packages to use this program.')
@@ -400,9 +402,39 @@ def import_file(file, folder):
             logging.error(f'unable to read {file} with the following error: {e}')
     else:
         try:
+            matches = {}
             df = pd.read_excel(file,
+                               sheet_name=None,
                                keep_default_na=False,
                                )
+            for a, b in product(df, df):
+                col_a = df[a].columns
+                col_b = df[b].columns
+                if (len(col_a) == len(col_b)
+                    and (len([i for i, j in zip(col_a, col_b) if i == j])
+                         == len(col_b))):
+                    matches[str(col_b)] = (matches.get(str(col_b), [a, b])
+                                           + [a, b])
+            for i in matches:
+                matches[i] = set(matches[i])
+            if (len(matches) == 1
+                and len(df) == 1
+                and len(copy.deepcopy(matches).popitem()[1]) == len(df)):
+                for i in df:
+                    df = df[i]
+            elif (len(matches) == 1
+                  and len(copy.deepcopy(matches).popitem()[1]) == len(df)):
+                dfs = []
+                for i in df:
+                    dfs.append(df[i])
+                df = pd.concat(dfs, ignore_index=True)
+            else:
+                for match in matches:
+                    dfs = []
+                    for i in list(filter(lambda n: n in matches[match], df)):
+                        dfs.append(df[i])
+                    df_new = pd.concat(dfs, ignore_index=True)
+                    print(df_new)
         except Exception as e:
             logging.error(f'unable to read {file} with the following error: {e}')
     generate_parquet_file(df, folder)
