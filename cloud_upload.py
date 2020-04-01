@@ -436,6 +436,7 @@ def import_file(file, folder):
             else:
                 file = Path(file)
                 file_name = Path(file).name.split('.')[0]
+                folder = Path(folder)
                 parent = folder.parent
                 folder.rmdir()
                 for match in matches:
