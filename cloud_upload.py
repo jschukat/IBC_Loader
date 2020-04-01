@@ -444,7 +444,7 @@ def import_file(file, folder):
                     sheet_name = list(matches[match])[0]
                     folder_name = f'{file_name}_{sheet_name}'
                     folder_name = folder_name.replace(' ', '_').replace('.', '_')
-                    create_folder(parent, folder_name)
+                    new_folder = create_folder(parent, folder_name)
                     for i in list(filter(lambda n: n in matches[match], df)):
                         dfs.append(df[i])
                     new_df = pd.concat(dfs, ignore_index=True)
@@ -564,7 +564,7 @@ def create_folder(path, name):
     if os.path.exists(fldr):
         logging.info(f'remove existing folder: {fldr}')
         shutil.rmtree(fldr)
-    time.sleep(2)
+    time.sleep(1)
     logging.info(f'create: {fldr}')
     os.makedirs(fldr)
     return fldr
