@@ -444,8 +444,7 @@ def import_file(file, folder):
                     sheet_name = list(matches[match])[0]
                     folder_name = f'{file_name}_{sheet_name}'
                     folder_name = folder_name.replace(' ', '_').replace('.', '_')
-                    new_folder = parent / folder_name
-                    new_folder.mkdir()
+                    create_folder(parent, folder_name)
                     for i in list(filter(lambda n: n in matches[match], df)):
                         dfs.append(df[i])
                     new_df = pd.concat(dfs, ignore_index=True)
