@@ -496,7 +496,7 @@ def fix_csv_file(file, folder, enc, quotechar, sep, escapechar):
         uni, col_new = [], []
         counter = 0
         for col in header:
-            for i in [' ', '.', ',', ';', ':']:
+            for i in [' ', '.', ',', ';', ':', '\n']:
                 col = col.replace(i, '_')
             col_new.append(col)
         header = col_new
