@@ -306,7 +306,7 @@ def determine_number_format(file, encoding, delimiter):
         return {'thousands': ',', 'decimal': '.'}
 
 
-def import_file(file, folder):
+def import_file(file, folder, second_try=False):
     # determine delimiter of csv file
     # assumes normal encoding of the file
     df = None
@@ -320,7 +320,8 @@ def import_file(file, folder):
         escapechar = dialect['escapechar']
         if escapechar is None:
             escapechar = '\\'
-
+        if second_try is True:
+            quotechar = None
         # TODO: make it have 3 tries and just change variables as exception
         # add UnicodeDecodeError open(file, mode='r', encoding=enc, errors='replace') as f:
         for enc in [encoding, 'utf-8', 'ascii', 'cp1252', 'latin_1', 'iso-8859-1']:
@@ -375,7 +376,9 @@ def import_file(file, folder):
                 generation_result = generate_parquet_file(df, folder)
                 if generation_result == 2:
                     logging.info(f'trying to cope with {file} in a different way. Encoding: {encoding}, Quotechar: {quotechar}')
-                    if fix_csv_file(file, folder, encoding, quotechar, delimiter, escapechar) == 0:
+                    if second_try is False:
+                        return import_file(file, folder, True)
+                    elif fix_csv_file(file, folder, encoding, quotechar, delimiter, escapechar) == 0:
                         logging.info(f'successfully fixed {file}')
                     else:
                         logging.error(f'{file} couldn\'t be fixed')
