@@ -376,7 +376,15 @@ def import_file(file, folder, second_try=False):
                 generation_result = generate_parquet_file(df, folder)
                 if generation_result == 2:
                     logging.info(f'trying to cope with {file} in a different way. Encoding: {encoding}, Quotechar: {quotechar}')
-                    if second_try is False:
+                    with open(file, mode='r', encoding=enc, errors='replace') as inp:
+                        for line in inp:
+                            quote_count = len(re.findall(quotechar, line))
+                            break
+                    if quote_count > 1:
+                        quoted = True
+                    else:
+                        quoted = False
+                    if second_try is False and quoted is False:
                         return import_file(file, folder, True)
                     elif fix_csv_file(file, folder, encoding, quotechar, delimiter, escapechar) == 0:
                         logging.info(f'successfully fixed {file}')
