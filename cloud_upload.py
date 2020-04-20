@@ -501,13 +501,13 @@ def fix_csv_file(file, folder, enc, quotechar, sep, escapechar):
         with open(file, mode='r', encoding=enc, errors='replace') as inp:
             for line in inp:
                 seps = len(re.findall(sep, line))
-                header = line.replace(quotechar, '').split(sep)
+                header = line.replace(quotechar, '').replace('\n', '').split(sep)
                 logging.info(f'{seps+1} columns were found in the first line.')
                 break
         uni, col_new = [], []
         counter = 0
         for col in header:
-            for i in [' ', '.', ',', ';', ':', '\n']:
+            for i in [' ', '.', ',', ';', ':']:
                 col = col.replace(i, '_')
             col_new.append(col)
         header = col_new
