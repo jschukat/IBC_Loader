@@ -488,6 +488,8 @@ def manipulate_string(buffer, quotechar, sep, seps, escapechar, header, folder, 
                 'dtype': str,
                 'quoting': 3,
                 'names': header,
+                'low_memory': True,
+                'dtype': str,
                 }
     result = pd.read_csv(**pd_config)
     logging.info('writing chunk to disk')
