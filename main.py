@@ -218,7 +218,7 @@ agreed = {ag}\n""".encode())
     root.destroy()
 
 
-root.title('Cloud Table Loader')
+root.title('IBC Loader')
 root.geometry('900x300+200+100')
 
 # TODO: convert the following parts to objects
