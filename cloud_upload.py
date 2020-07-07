@@ -469,7 +469,11 @@ def import_file(file, folder, second_try=False):
 
 def manipulate_string(buffer, quotechar, sep, seps, escapechar, header, folder, enc):
     text = ''.join(buffer)
-    text = text.replace(quotechar, '')
+    if quotechar is None:
+        text = text.replace('"', '')
+        text = text.replace("'", "")
+    else:
+        text = text.replace(quotechar, '')
     text = re.sub(f'^([^{sep}\n]*{sep}){{{seps+1},}}[^{sep}\n]*$', '', text, flags=re.M)
     text = re.sub(f'^([^{sep}\n]*{sep}){{{0},{seps-1}}}[^{sep}\n]*$', '', text, flags=re.M)
     text = StringIO(text)
