@@ -153,8 +153,7 @@ def sort_abap(path):
 class cloud:
 
     def get_api(self, path):
-        return "https://{}.{}.celonis.cloud/{}".format(self.tenant, self.realm,
-                                                       path)
+        return f"https://{self.tenant}.{self.realm}.celonis.cloud/{path}"
 
     def __init__(self, tenant, realm, api_key):
         self.tenant = tenant
@@ -244,7 +243,7 @@ def test_float(x):
 
 def determine_dialect(file, enc):
     sniffer = csv.Sniffer()
-    sniffer.preferred = [';', ',', '\t', '|']
+    sniffer.preferred = [';', ',', '\t', '|', '~']
     dialect = ''
     data = []
     counter = 0
@@ -645,7 +644,7 @@ def generate_parquet_file(df, folder):
         logging.info('successfully written data to disk')
         return 0
     except Exception as e:
-        logging.exception(f'Got exception "{e}" while executing function generate_parquet_file.')
+        logging.exception(f'Got exception "{e}" while executing function generate_parquet_file.\n\n{df}')
         if "expected after" in str(e):
             return 2
         else:
@@ -808,7 +807,7 @@ if cl.upload == 1:
                                      data_connection_id=connectionid,
                                      targetName=os.path.split(dr)[-1],
                                      upsert=delta)
-        logging.debug(f'jobhandle : {jobhandle}')
+        logging.info(f'jobhandle : {jobhandle}')
         jobstatus[jobhandle['id']] = False
         uppie.push_new_dir(pool_id=poolid, job_id=jobhandle['id'], dir_path=dr)
         uppie.submit_job(pool_id=poolid, job_id=jobhandle['id'])
