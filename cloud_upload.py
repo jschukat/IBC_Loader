@@ -243,7 +243,7 @@ def test_float(x):
 
 def determine_dialect(file, enc):
     sniffer = csv.Sniffer()
-    sniffer.preferred = [';', ',', '\t', '|', '~']
+    sniffer.preferred = [';', ',', '\t', '|', '~', ' ']
     dialect = ''
     data = []
     counter = 0
