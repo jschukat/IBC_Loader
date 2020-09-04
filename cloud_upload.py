@@ -485,7 +485,7 @@ def manipulate_string(buffer, quotechar, sep, seps, escapechar, header, folder, 
                 'warn_bad_lines': True,
                 'skip_blank_lines': True,
                 'escapechar': escapechar,
-                'chunksize': 200000,
+                'chunksize': 400000,
                 'engine': 'python',
                 'low_memory': True,
                 'dtype': str,
@@ -610,7 +610,7 @@ def generate_parquet_file(df, folder):
             if cl.as_string:
                 df = df.astype(str)
             logging.info('starting to write dataframe to disk')
-            chunksize = 200000
+            chunksize = 400000
             for pos in range(0, len(df), chunksize):
                 tmp_filename = os.path.join(folder,
                                             ''.join([file, str(pos), datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S'), '.parquet']))
