@@ -49,7 +49,6 @@ try:
     from os import listdir
     from os.path import isfile, join
     import os
-    import psutil
     import re
     import time
     import subprocess
@@ -72,6 +71,14 @@ except ModuleNotFoundError as e:
     logging.error('please install missing packages to use this program.')
     print('shutting down')
     quit()
+
+try:
+    import psutil
+    psutil_import = True
+except ModuleNotFoundError as e:
+    logging.error(e)
+    logging.error('this will initialize the JVM without xmx, if you run into memory issues, please install psutil.')
+    psutil_import = False
 
 # =============================================================================
 # returns all files for a path that are csv or Excel
@@ -674,7 +681,6 @@ if cl.transformation == 1:
         jar = glob.glob('connector*.jar')[0]
         transformationfolders = [x for x in glob.glob(os.path.join(transformationdir, '*')) if os.path.isdir(x)]
         while transformationfolders:
-            availablememory = str(int(((psutil.virtual_memory().free)/1024.0**2)*0.95))
             current_working_folder = transformationfolders.pop()
             cwd_files = glob.glob(os.path.join(current_working_folder, '*'))
             if all(map(lambda x: ending(x) == 'csv', cwd_files)):
@@ -707,9 +713,14 @@ if cl.transformation == 1:
             else:
                 logging.error(f'wrong file format in folder: {current_working_folder}')
                 continue
-            cmdlist = ('java -Xmx', availablememory,
-                       'm -jar ', jar, ' convert "',
-                       current_working_folder, '" "', dir_path, '" ', compression)
+            if psutil_import is True:
+                availablememory = str(int(((psutil.virtual_memory().free)/1024.0**2)*0.95))
+                cmdlist = ('java -Xmx', availablememory,
+                           'm -jar ', jar, ' convert "',
+                           current_working_folder, '" "', dir_path, '" ', compression)
+            else:
+                cmdlist = ('java -jar ', jar, ' convert "',
+                           current_working_folder, '" "', dir_path, '" ', compression)
 
             transformationcmd = ''.join(cmdlist)
             logging.info(f'starting transformation with the following command:\n{transformationcmd}')
