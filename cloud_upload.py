@@ -108,26 +108,14 @@ def files_left(path):
 # OUT:  directory as string or None
 # =============================================================================
 def sort_abap(path):
-    t1 = glob.glob(os.path.join(path, '*'))
-    for file in t1:
-        splt = os.path.basename(file).split('.')
-        if len(splt) > 2:
-            logging.warning(f'found file to rename: {file}')
-            if splt[-2] == 'csv':
-                newname = os.path.join(os.path.dirname(file), '.'.join(['_'.join(splt[:-2]), splt[-2], splt[-1]]))
-            else:
-                newname = os.path.join(os.path.dirname(file), '.'.join(['_'.join(splt[:-1]), splt[-1]]))
-            logging.warning(f'renaming {file} to: {newname}')
-            os.rename(file, newname)
-    t1 = glob.glob(os.path.join(path,'*'))
+    t1 = Path(path).glob('*')
     # =========================================================================
     # look for header files in all the csv files
     # =========================================================================
     headers = []
-    for i in range(len(t1)):
-        t1[i] = os.path.split(t1[i])[1]
-        header_name = re.findall('(.*)_HEADER_[0-9]{8}_[0-9]{6}.', t1[i])
-        logging.info(f'{t1[i]} {header_name}')
+    for i in t1:
+        header_name = re.findall('(.*)_HEADER_[0-9]{8}_[0-9]{6}.', i.name)
+        logging.info(f'{i.name} {header_name}')
         if header_name:
             headers.append(header_name[0])
     headers = set(headers)
@@ -136,21 +124,22 @@ def sort_abap(path):
     #   the files have been moved to.
     #   If no files could be found return None
     # =========================================================================
-    abap_dir = os.path.join(path, 'abap')
-    if headers or glob.glob(os.path.join(abap_dir, '*')):
-        if not os.path.isdir(abap_dir):
-            os.mkdir(abap_dir)
+    t1 = Path(path).glob('*')
+    abap_dir = Path(path) / 'abap'
+    if headers or abap_dir.glob('*'):
+        if not abap_dir.is_dir():
+            abap_dir.mkdir()
         # TODO: check if this can be made in one go (mass folder creation)
         header_dict = dict()
         for header_folder in headers:
-            header_path = os.path.join(abap_dir, header_folder)
-            if not os.path.isdir(header_path):
-                os.mkdir(header_path)
+            header_path = abap_dir / header_folder
+            if not header_path.is_dir():
+                header_path.mkdir()
             header_dict[header_folder] = header_path
         for file in t1:
             for header in header_dict.items():
-                if ''.join([header[0], '_']) in file:
-                    shutil.move(os.path.join(path, file), header[1])
+                if ''.join([header[0], '_']) in str(file):
+                    shutil.move(str(file), header[1])
                     break
         return abap_dir
     else:
@@ -816,7 +805,7 @@ if cl.upload == 1:
         logging.info(f'\nuploading: {os.path.split(dr)[-1]}')
         jobhandle = uppie.create_job(pool_id=poolid,
                                      data_connection_id=connectionid,
-                                     targetName=os.path.split(dr)[-1],
+                                     targetName=Path(dr).name,
                                      upsert=delta)
         logging.info(f'jobhandle : {jobhandle}')
         jobstatus[jobhandle['id']] = False
