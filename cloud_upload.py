@@ -146,6 +146,25 @@ def sort_abap(path):
         return None
 
 
+def cleanup_abap_par(abap, par):
+    slashes = []
+    for i in Path(abap).iterdir():
+        foldername = i.name
+        if len(foldername.split('.')) > 1:
+            slashes.append(foldername)
+    for folder in slashes:
+        new_dir = (Path(par) / folder)
+        if new_dir.is_dir():
+            shutil.rmtree(str(new_dir))
+        new_dir.mkdir()
+        files = (Path(par) / folder.replace('.', '/')).glob('**/*.parquet')
+        for file in files:
+            shutil.move(str(file), str(new_dir))
+    cleanup = set([f.split('.')[0] for f in slashes])
+    for clean in cleanup:
+        shutil.rmtree(str(Path(par) / clean))
+
+
 class cloud:
 
     def get_api(self, path):
@@ -740,6 +759,7 @@ if cl.transformation == 1:
                 logging.info('transforamtion finished.')
         os.remove(sample_name)
 
+        cleanup_abap_par(transformationdir, dir_path) 
     files = files_left(transformationdir_general)
     logging.info(f'non abap files about to be transformed: {files}')
 
@@ -802,7 +822,7 @@ if cl.upload == 1:
     for dr in dirs:
         if dr == '__pycache__':
             continue
-        logging.info(f'\nuploading: {os.path.split(dr)[-1]}')
+        logging.info(f'\nuploading: {Path(dr).name.replace('.', '/')}')
         jobhandle = uppie.create_job(pool_id=poolid,
                                      data_connection_id=connectionid,
                                      targetName=Path(dr).name.replace('.', '/'),
