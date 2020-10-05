@@ -823,7 +823,7 @@ if cl.upload == 1:
     for dr in dirs:
         if dr == '__pycache__':
             continue
-        logging.info(f'\nuploading: {Path(dr).name.replace('.', '/')}')
+        logging.info(f'\nuploading: {Path(dr).name.replace(".", "/")}')
         jobhandle = uppie.create_job(pool_id=poolid,
                                      data_connection_id=connectionid,
                                      targetName=Path(dr).name.replace('.', '/'),
