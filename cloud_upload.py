@@ -805,7 +805,7 @@ if cl.upload == 1:
         logging.info(f'\nuploading: {os.path.split(dr)[-1]}')
         jobhandle = uppie.create_job(pool_id=poolid,
                                      data_connection_id=connectionid,
-                                     targetName=Path(dr).name,
+                                     targetName=Path(dr).name.replace('.', '/'),
                                      upsert=delta)
         logging.info(f'jobhandle : {jobhandle}')
         jobstatus[jobhandle['id']] = False
