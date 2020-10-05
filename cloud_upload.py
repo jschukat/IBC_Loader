@@ -147,6 +147,7 @@ def sort_abap(path):
 
 
 def cleanup_abap_par(abap, par):
+    logging.info(f'starting cleanup of {par} with regard to {abap}.')
     slashes = []
     for i in Path(abap).iterdir():
         foldername = i.name
@@ -759,7 +760,7 @@ if cl.transformation == 1:
                 logging.info('transforamtion finished.')
         os.remove(sample_name)
 
-        cleanup_abap_par(transformationdir, dir_path) 
+        cleanup_abap_par(transformationdir, dir_path)
     files = files_left(transformationdir_general)
     logging.info(f'non abap files about to be transformed: {files}')
 
