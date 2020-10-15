@@ -126,7 +126,7 @@ def sort_abap(path):
     # =========================================================================
     t1 = Path(path).glob('*')
     abap_dir = Path(path) / 'abap'
-    if headers or abap_dir.glob('*'):
+    if len(headers) > 0 or len(list(abap_dir.glob('*'))) > 0:
         if not abap_dir.is_dir():
             abap_dir.mkdir()
         # TODO: check if this can be made in one go (mass folder creation)
