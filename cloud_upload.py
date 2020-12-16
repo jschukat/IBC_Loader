@@ -737,10 +737,13 @@ if cl.transformation == 1:
             with subprocess.Popen(transformationcmd, stdout=subprocess.PIPE,
                                   stderr=subprocess.STDOUT) as proc:
                 while proc.poll() is None:
-                    data = str(proc.stdout.readline(), 'utf-8')
-                    logging.debug(data)
-                    with open(sample_name, 'a') as tmp_output:
-                        tmp_output.write(data)
+                    try:
+                        data = str(proc.stdout.readline(), 'utf-8')
+                        logging.debug(data)
+                        with open(sample_name, 'a') as tmp_output:
+                            tmp_output.write(data)
+                    except Exception as e:
+                        logging.error(f'{e} occured while parsing sap-connector output')
 
         # ======================================================================
         # Opening the output file to find the errors and keep them in the log
