@@ -2,11 +2,11 @@ This Python script is for uploading flat files into the EMS. It can be used for 
 
 # Prerequisites:
 
-  1. Install the latest Anaconda version (https://www.anaconda.com/distribution/#windows) and make sure that you add Anaconda to your Path![add Anaconda to Path](https://github.com/jschukat/IBC_Loader/blob/master/pictures/1.png?raw=true)
-  2. Install git (https://git-scm.com/download/win)
-  3. Install IBC Loader
+  1. Install the latest Anaconda version (https://www.anaconda.com/distribution/#windows) and make sure that you add Anaconda to your Path<br/>![add Anaconda to Path](https://github.com/jschukat/IBC_Loader/blob/master/pictures/1.png?raw=true)
+  3. Install git (https://git-scm.com/download/win)
+  4. Install IBC Loader
   - Choose an empty directory into which the IBC Loader shall be installed
-  - Once you opened it in the Windows Explorer (Win + E), right click and choose Git Bash Here![open git bash](https://github.com/jschukat/IBC_Loader/blob/master/pictures/2.png?raw=true)
+  - Once you opened it in the Windows Explorer (Win + E), right click and choose Git Bash Here<br/>![open git bash](https://github.com/jschukat/IBC_Loader/blob/master/pictures/2.png?raw=true)
   - In the newly opened console run: git clone https://github.com/jschukat/IBC_Loader.git.
   - This should download the latest version of the IBC Loader and install it into the directory
 
@@ -19,6 +19,7 @@ If you want to transfrom ABAP exported files make sure to have:
 
 # 1. Run Cloud Table Loader
 Run the batch file contained in the folder (or, if you aren't allowed to execute batch files, run "python.exe main.py" from your command line) which will open up the following window:
+
 ![Run Cloud Table Loader](https://github.com/jschukat/IBC_Loader/blob/master/pictures/3.png?raw=true)
 
 # 2. Enter URL
