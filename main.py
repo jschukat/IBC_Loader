@@ -2,7 +2,10 @@ from tkinter import filedialog
 from tkinter import *
 import os
 import subprocess
+from sys import platform
 import sys
+
+
 try:
     from chardet.universaldetector import UniversalDetector
 except ModuleNotFoundError as e:
@@ -76,7 +79,23 @@ if sys.platform == 'linux':
 else:
     fast = os.popen('conda list').read()
     if 'python-snappy' not in fast or 'fastparquet' not in fast:
-        conda_check = subprocess.run(['where.exe', 'conda'])
+        try:
+            if platform == "linux" or platform == "linux2":
+                # linux
+                conda_check = subprocess.run(['locate', 'conda'])
+            elif platform == "darwin":
+                # OS X
+                conda_check = subprocess.run('where conda', shell=True)
+            elif platform == "win32":
+                # Windows
+                conda_check = subprocess.run(['where.exe', 'conda'])
+            else:
+                print('please install missing packages')
+                quit()
+        except Exception as e:
+            print(e)
+            print('please install missing packages')
+            quit()
         if conda_check.returncode == 0:
             print('installing fastparquet and snappy')
             subprocess.run(['conda', 'install', 'fastparquet', '-y'])
