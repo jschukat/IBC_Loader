@@ -1,4 +1,4 @@
-This Python script is for uploading flat files into the EMS. It can be used for ABAP Exports, csvs and Excel files. Files larger than 1GB shouldn't pose a problem.
+This Python script is for uploading flat files into the EMS. It can be used for ABAP Exports, csvs, Excel files and parquet. Files larger than 1GB shouldn't pose a problem.
 
 # Prerequisites:
 
